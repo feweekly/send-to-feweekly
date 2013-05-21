@@ -35,15 +35,17 @@ if (window.THE_FEWKLY_BM) {
             this.isSafari       = (userAgent.indexOf('Safari') !== -1 && userAgent.indexOf('Chrome') === -1);
 
             // overlay values
-            var height          = (this.isMobile ? 60 : 80) * scale;
-            var fontSize        = (this.isMobile ? 18 : 20) * scale;
-            var lineHeight      = (this.isMobile ? height * 0.95 : height);
+            // TODO exension image url
+            var height          = 80 * scale;
+            var fontSize        = 20 * scale;
+            var lineHeight      = height;
+            var logoSrc         = chrome.extension.getURL('img/Feweekly-Chrome-OptionsLogo.png');
 
             this.shadowHeight = 20;
 
             this.itemWasSaved = false;
 
-            /* multistr:false */
+            // TODO refactor css here
             var styles = '\
             #FEWKLY_BM_OVERLAY\
             {\
@@ -78,10 +80,10 @@ if (window.THE_FEWKLY_BM) {
             #FEWKLY_BM_OVERLAY_LOGO\
             {\
                 display: block;\
-                width: 200px;\
+                width: 225px;\
                 height: 75px;\
                 float: left;\
-                background: url(http://' + FEWKLY_D + '/img/feweekly/logo.png) left center no-repeat;\
+                background: url(' + logoSrc + ') left center no-repeat;\
             }\
             #FEWKLY_BM_OVERLAY_WRAPPER\
             {\
@@ -89,12 +91,17 @@ if (window.THE_FEWKLY_BM) {
                 padding-right: 7%;\
                 height: 100%;\
             }\
+            #FEWKLY_BM_OVERLAY_LABEL\
+            {\
+                text-indent:80px;\
+                font-weight:bold;\
+            }\
             ';
 
             // add overlay
             var overlay = '\
             <div id="FEWKLY_BM_OVERLAY">\
-                <div id="FEWKLY_BM_OVERLAY_WRAPPER" class="FEWKLY_' + (this.isMobile ? "mobile" : "desktop") + '">\
+                <div id="FEWKLY_BM_OVERLAY_WRAPPER">\
                     <a id="FEWKLY_BM_OVERLAY_LOGO" href="http://' + FEWKLY_D + '" target="_blank"></a>\
                     <div id="FEWKLY_BM_OVERLAY_LABEL"></div>\
                 </div>\
