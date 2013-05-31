@@ -1,10 +1,21 @@
+/* globals util */
 var feweekly = (function () {
 
-    var api = "http://www.dev.feweekly.com/news_letter/contributions/add",
-        domain = "http://www.feweekly.com",
+    var controbuteAPI = '/news_letter/contributions/add',
+        subscribeAPI = '/news_letter/subscribes/add',
+        domain = 'http://www.feweekly.com',
+        domainDebug = 'http://www.dev.feweekly.com',
         version = '0.0.1',
-        showReleaseNotes = true,
-        debug = true;
+        showReleaseNotes = true;
+
+    function isSubscribed() {
+        console.log(util.getSetting('email'));
+        return util.getSetting('email') !== undefined;
+    }
+
+    function isDebug() {
+        return util.getSetting('debug') !== undefined && util.getSetting('debug');
+    }
 
     /**
      * Submit a link to feweeekly
@@ -14,6 +25,7 @@ var feweekly = (function () {
      */
     function add(title, url, options) {
         var data = {
+            email: util.getSetting('email'),
             url: url,
             title: title
         };
@@ -25,8 +37,8 @@ var feweekly = (function () {
         feweekly.log('add', JSON.stringify(data));
 
         $.ajax({
-            url: api,
-            type: "POST",
+            url: feweekly.domain + controbuteAPI,
+            type: 'POST',
             data: data,
             dataType: 'json',
             success: function (response) {
@@ -38,10 +50,45 @@ var feweekly = (function () {
                     options.error(response);
                 }
             },
-            error: function (xhr) {
-                options.error(xhr.status, xhr);
+            error: function (request) {
+                options.error(request.status, request);
             }
         });
+    }
+
+    /**
+     * Subscribe to feweekly
+     * @param {String} label
+     * @param {Object} data
+     */
+    function subscribe(email, callbacks) {
+        if (feweekly.isSubscribed()) return;
+
+        feweekly.log('subscribe', JSON.stringify(email));
+
+        try {
+            $.ajax({
+                url: feweekly.domain + subscribeAPI,
+                type: 'POST',
+                data: {
+                    'data[email]': email,
+                    'data[source]': util.isChrome() ? 'chrome' : 'safari',
+                },
+                dataType: 'json',
+                success: function (response) {
+                    feweekly.log('subscribe.complete', JSON.stringify(response));
+
+                    if (response.status) {
+                        util.setSetting('email', email);
+                    }
+
+                    callbacks.success();
+                },
+                error: function (request) {
+                    callbacks.error(request.status, request);
+                }
+            });
+        } catch (e) {}
     }
 
     /**
@@ -50,17 +97,19 @@ var feweekly = (function () {
      * @param {Object} data
      */
     function log(label, data) {
-        if (debug) {
+        if (isDebug()) {
             console.log('feweekly.' + label + ': ' + JSON.stringify(data));
         }
     }
 
     return {
         add: add,
+        subscribe: subscribe,
         log: log,
         version: version,
-        debug: debug,
-        domain: domain,
+        debug: isDebug(),
+        domain: isDebug() ? domainDebug : domain,
+        isSubscribed: isSubscribed,
         showReleaseNotes: showReleaseNotes
     };
 

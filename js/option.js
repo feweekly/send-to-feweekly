@@ -79,7 +79,6 @@
 
         }());
 
-
         (function initKeyboardShortcuts() {
             // IE doesn't support Array#indexOf, so have a simple replacement
             function index(array, item) {
@@ -217,6 +216,9 @@
                 updateUI();
             });
         }());
+
+        (function initDebug() {
+        })();
 
         updateUI();
 

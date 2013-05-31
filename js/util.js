@@ -6,11 +6,11 @@ var util = {
     },
 
     isChrome: function () {
-        return window["chrome"] !== undefined && window.chrome.app;
+        return window['chrome'] !== undefined && window.chrome.app;
     },
 
     isSafari: function () {
-        return window["safari"] !== undefined;
+        return window['safari'] !== undefined;
     },
 
     isMac: function () {
@@ -53,7 +53,7 @@ var util = {
         if (util.isChrome()) {
             chrome.tabs.executeScript(tab.id, {code: script});
         } else if (util.isSafari()) {
-            tab.page.dispatchMessage("executeScript", script);
+            tab.page.dispatchMessage('executeScript', script);
         }
     },
 
@@ -62,8 +62,8 @@ var util = {
             chrome.tabs.executeScript(tab.id, {file: scriptURL});
         } else if (util.isSafari()) {
             var script = $.ajax({
-                type: "GET",
-                url: "../" + scriptURL,
+                type: 'GET',
+                url: '../' + scriptURL,
                 async: false
             });
             util.executeScriptInTab(tab, script.responseText);
@@ -78,8 +78,8 @@ var util = {
             // TODO: This is not working at the moment, because executeScriptInTab
             //       is an async operation, we need to fix that!
             var script = $.ajax({
-                type: "GET",
-                url: "../" + scriptURL,
+                type: 'GET',
+                url: '../' + scriptURL,
                 async: false
             });
 
@@ -114,15 +114,15 @@ var util = {
     // Helper methods because localStorage can't save bools -.-
     stringFromBool: function (bl) {
         if (bl === false) {
-            return "false";
+            return 'false';
         } else {
-            return "true";
+            return 'true';
         }
     },
 
     boolFromString: function (str) {
-        if (typeof str === "string") {
-            if (str === "false") {
+        if (typeof str === 'string') {
+            if (str === 'false') {
                 return false;
             } else {
                 return true;
@@ -150,7 +150,7 @@ var util = {
     settingContainerForKey: function (key) {
         if (util.isSafari()) {
             var location;
-            if (key === "username" || key === "password") {
+            if (key === 'username' || key === 'password') {
                 location = safari.extension.secureSettings;
             } else {
                 location = localStorage;
@@ -166,7 +166,9 @@ var util = {
 
     addMessageListener: function (handler) {
         if (util.isChrome()) {
-            if (window.chrome.extension.onMessage) {
+            if (window.chrome.runtime.onMessage) {
+                chrome.runtime.onMessage.addListener(handler);
+            } else if (window.chrome.extension.onMessage) {
                 chrome.extension.onMessage.addListener(handler);
             } else {
                 chrome.extension.onRequest.addListener(handler);
@@ -183,7 +185,7 @@ var util = {
             }
 
             if (listenable) {
-                listenable.addEventListener("message", function (message) {
+                listenable.addEventListener('message', function (message) {
                     message.tab = message.target;
                     var cb;
 
@@ -192,7 +194,7 @@ var util = {
                         var cbId = message.message.__cbId;
                         cb = function (data) {
                             if (tab && tab.page && tab.page.dispatchMessage) {
-                                tab.page.dispatchMessage("__performCb", {
+                                tab.page.dispatchMessage('__performCb', {
                                     cbId: cbId,
                                     data: data
                                 });
@@ -212,7 +214,7 @@ var util = {
         if (util.isChrome()) {
             chrome.tabs.sendMessage(tab.id, message);
         } else if (util.isSafari()) {
-            tab.page.dispatchMessage("message", message);
+            tab.page.dispatchMessage('message', message);
         }
     },
 
@@ -220,17 +222,19 @@ var util = {
     sendMessage: function (message, cb) {
         if (util.isChrome()) {
             if (!cb) cb = function () {};
-            if (chrome.extension.sendMessage) {
+            if (chrome.runtime.sendMessage) {
+                chrome.runtime.sendMessage(message, cb);
+            } else if (chrome.extension.sendMessage) {
                 chrome.extension.sendMessage(message, cb);
             } else {
                 chrome.extension.sendRequest(message, cb);
             }
         } else if (util.isSafari()) {
             // if (cb) {
-            //     // message["__cbId"] = Callbacker.addCb(cb);
+            //     // message['__cbId'] = Callbacker.addCb(cb);
             // }
 
-            safari.self.tab.dispatchMessage("message", message);
+            safari.self.tab.dispatchMessage('message', message);
         }
     }
 };

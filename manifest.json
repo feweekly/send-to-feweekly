@@ -18,10 +18,10 @@
         },
         "default_title": "Send to Feweekly"
     },
-    "content_scripts": [ {
-        "js": [ "js/keyboard-shortcut.js" ],
-        "matches": [ "*://*/*" ]
-    }],
+    //"content_scripts": [ {
+    //    "js": [ "js/keyboard-shortcut.js" ],
+    //    "matches": [ "*://*/*" ]
+    //}],
     "options_page": "html/options.html",
     "permissions": [
         "background", "tabs", "contextMenus",
