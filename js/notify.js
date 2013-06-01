@@ -226,7 +226,7 @@ if (window.THE_FEWKLY_BM) {
             var self = this;
             setTimeout(function () {
                 self.itemWasSaved = true;
-                self.displayMessage('Page Saved!');
+                self.displayMessage(chrome.i18n.getMessage('infoSaved'));
                 self.getReadyToHide();
             }, 30);
 
@@ -351,7 +351,7 @@ if (window.THE_FEWKLY_BM) {
             if (window.___FEWKLY__URL_SAVED === this.urlToSave) {
                 this.overlay.wasSaved();
             } else {
-                this.overlay.displayMessage("Saving to Feweekly...");
+                this.overlay.displayMessage(chrome.i18n.getMessage('infoSaving'));
                 this.addMessageListener(function (request) {
                     self.handleMessageResponse(request);
                 });

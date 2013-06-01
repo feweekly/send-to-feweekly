@@ -1,0 +1,26 @@
+{
+    "extensionName": {
+        "message": "发送到Feweekly"
+    },
+    "extensionDescription": {
+        "message": "与其他前端工程师分享你喜欢的文章、教程、工具、代码库的最简单工具"
+    },
+    "browserAction": {
+        "message": "发送到Feweekly"
+    },
+    "contextMenu": {
+        "message": "发送到Feweekly"
+    },
+    "errorOffline": {
+        "message": "哎呀，你的网络貌似有问题"
+    },
+    "errorInvalid": {
+        "message": "抱歉，你要保存的网址不合格"
+    },
+    "infoSaving": {
+        "message": "请稍后，正在保存..."
+    },
+    "infoSaved": {
+        "message": "页面已保存！"
+    }
+}

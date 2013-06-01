@@ -1,8 +1,9 @@
 {
     "version": "0.0.1",
-    "name": "Send to Feweekly",
-    "description": "Send to Feweekly Extension for Google Chrome - The best way to share articles, tutorials, videos and more with front end engineerers",
+    "name": "__MSG_extensionName__",
+    "description": "__MSG_extensionDescription__",
     "manifest_version": 2,
+    "default_locale": "en",
     "icons": {
         "128": "img/icon-128.png",
         "16": "img/icon-16.png",
@@ -18,10 +19,10 @@
         },
         "default_title": "Send to Feweekly"
     },
-    //"content_scripts": [ {
-    //    "js": [ "js/keyboard-shortcut.js" ],
-    //    "matches": [ "*://*/*" ]
-    //}],
+    "content_scripts": [ {
+        "js": [ "js/keyboard-shortcut.js" ],
+        "matches": [ "*://*/*" ]
+    }],
     "options_page": "html/options.html",
     "permissions": [
         "background", "tabs", "contextMenus",

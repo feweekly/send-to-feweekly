@@ -1,0 +1,26 @@
+{
+    "extensionName": {
+        "message": "Send to Feweekly"
+    },
+    "extensionDescription": {
+        "message": "Send to Feweekly Extension for Google Chrome - The best way to share articles, tutorials, videos and more with front end engineerers"
+    },
+    "browserAction": {
+        "message": "Send to Feweekly"
+    },
+    "contextMenu": {
+        "message": "Send to Feweekly"
+    },
+    "errorOffline": {
+        "message": "Oops! You must be online to save this page."
+    },
+    "errorInvalid": {
+        "message": "Sorry, you can only save valid web pages to Feweekly."
+    },
+    "infoSaving": {
+        "message": "Saving to Feweekly..."
+    },
+    "infoSaved": {
+        "message": "Page Saved!"
+    }
+}

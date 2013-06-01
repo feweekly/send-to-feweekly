@@ -1,8 +1,8 @@
 /* globals util, feweekly */
 $(function () {
-    var VERSION = feweekly.version;
-    var SHOW_RELEASE_NOTES = feweekly.showReleaseNotes;
-    var authentication;
+    var VERSION = feweekly.version,
+        SHOW_RELEASE_NOTES = feweekly.showReleaseNotes,
+        authentication;
 
     // Helpers
     Array.prototype.removeByValue = function (val) {
@@ -16,7 +16,7 @@ $(function () {
 
     // Notifications
     function showInvalidURLNotification(tab) {
-        util.sendMessageToTab(tab, {status: 'error', error: 'Sorry, you can only save valid web pages to Feweekly.'});
+        util.sendMessageToTab(tab, {status: 'error', error: chrome.i18n.getMessage('errorInvalid')});
     }
 
     function loadNotificationUIIntoPage(tab, url) {
@@ -84,7 +84,7 @@ $(function () {
                     setTimeout(function () {
                         // Check for online status
                         if (!navigator.onLine) {
-                            util.sendMessageToTab(tab, {status: 'error', error: 'Oops! You must be online to save this page.'});
+                            util.sendMessageToTab(tab, {status: 'error', error: chrome.i18n.getMessage('errorOffline')});
                             return;
                         }
 
@@ -96,7 +96,7 @@ $(function () {
 
         // Add a context menu entry for links to add them to the queue
         chrome.contextMenus.create({
-            'title': 'Send to Feweekly',
+            'title': chrome.i18n.getMessage("contextMenu"),
             'contexts': ['page', 'frame', 'editable', 'image', 'video', 'audio', 'link', 'selection'],
             'onclick': handler
         });
@@ -157,7 +157,7 @@ $(function () {
                     setTimeout(function () {
                         // Check for online status
                         if (!navigator.onLine) {
-                            util.sendMessageToTab(sender.tab, {status: 'error', error: 'Oops! You must be online to save this page.'});
+                            util.sendMessageToTab(sender.tab, {status: 'error', error: chrome.i18n.getMessage('errorOffline')});
                             return;
                         }
 
@@ -206,7 +206,7 @@ $(function () {
                 setTimeout(function () {
                     // Check for online status
                     if (!navigator.onLine) {
-                        util.sendMessageToTab(tab, {status: 'error', error: 'Oops! You must be online to save this page.'});
+                        util.sendMessageToTab(tab, {status: 'error', error: chrome.i18n.getMessage('errorOffline')});
                         return;
                     }
 
@@ -301,7 +301,9 @@ $(function () {
                             util.sendMessage({action: 'updateOptions'});
                         }
 
-                        handleSaveToFeweekly(feweekly.currentTab, feweekly.currentTab.url);
+                        window.setTimeout(function () {
+                            handleSaveToFeweekly(feweekly.currentTab, feweekly.currentTab.url);
+                        }, 200);
 
                         sendResponse({status: 'success'});
 
@@ -376,8 +378,6 @@ $(function () {
         }
 
         util.setSetting('lastInstalledVersion', VERSION);
-
-        // TODO remove this
         util.setSetting('debug', true);
 
     }());

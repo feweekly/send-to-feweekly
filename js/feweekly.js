@@ -9,7 +9,6 @@ var feweekly = (function () {
         showReleaseNotes = true;
 
     function isSubscribed() {
-        console.log(util.getSetting('email'));
         return util.getSetting('email') !== undefined;
     }
 
