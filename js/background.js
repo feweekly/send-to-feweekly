@@ -301,9 +301,12 @@ $(function () {
                             util.sendMessage({action: 'updateOptions'});
                         }
 
-                        window.setTimeout(function () {
-                            handleSaveToFeweekly(feweekly.currentTab, feweekly.currentTab.url);
-                        }, 200);
+                        // trigger saveToFeweekly when there exists currentTab
+                        if (feweekly.currentTab) {
+                            window.setTimeout(function () {
+                                handleSaveToFeweekly(feweekly.currentTab, feweekly.currentTab.url);
+                            }, 200);
+                        }
 
                         sendResponse({status: 'success'});
 
@@ -355,7 +358,7 @@ $(function () {
         // Default settings
         $.each({
             'keyboard-shortcut': 'true',
-            'keyboard-shortcut-add': (util.isMac() ? String.fromCharCode('8984') + '+' + String.fromCharCode('8679') + '+P' : 'ctrl+shift+S')
+            'keyboard-shortcut-add': (util.isMac() ? String.fromCharCode('8984') + '+' + String.fromCharCode('8679') + '+S' : 'ctrl+shift+S')
         }, function (key, value) {
             if (!util.getSetting(key)) {
                 util.setSetting(key, value);

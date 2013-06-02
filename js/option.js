@@ -2,21 +2,18 @@
 (function () {
 
     function updateUI() {
-        var usernameField = document.getElementById("username-field");
-        var logoutLinkWrapper = document.getElementById("logout-link-wrapper");
-        var loginLinkWrapper = document.getElementById("login-link-wrapper");
+        var emailField = document.getElementById("email-field");
+        var subscribeLinkWrapper = document.getElementById("subscribe-link-wrapper");
 
-        util.sendMessage({action: "getSetting", key: "username"}, function (response) {
-            var username = response.value;
-            if (username) {
-                usernameField.innerHTML = username;
-                logoutLinkWrapper.style.display = "inline";
-                usernameField.style.display = "inline";
-                loginLinkWrapper.style.display = "none";
+        util.sendMessage({action: "getSetting", key: "email"}, function (response) {
+            var email = response.value;
+            if (email) {
+                emailField.innerHTML = email;
+                emailField.style.display = "inline";
+                subscribeLinkWrapper.style.display = "none";
             } else {
-                usernameField.style.display = "none";
-                logoutLinkWrapper.style.display = "none";
-                loginLinkWrapper.style.display = "inline";
+                emailField.style.display = "none";
+                subscribeLinkWrapper.style.display = "inline";
             }
 
             util.sendMessage({action: "getSetting", key: 'keyboard-shortcut-add'}, function (response) {
@@ -29,9 +26,7 @@
         });
     }
 
-
     // Keyboard Shortcut
-
     function validKeyboardShortcut(keyboardShortcut) {
         // Check the key combo
         // The regex:
@@ -48,33 +43,20 @@
     function init() {
 
         (function initLinks() {
-            $('#logout-link').click(function () {
-                util.sendMessage({action: "logout"}, function () {
-                    updateUI();
-                });
+            $('#subscribe-link').click(function () {
+                util.sendMessage({action: "showSubscribeWindow"});
             });
 
-            $('#login-link').click(function () {
-                util.sendMessage({action: "showLoginWindow"});
-            });
-
-            $('#search-support-link').click(function (evt) {
-                var searchSupportLink = "http://help.getpocket.com";
+            $('#search-support-link').click(function (e) {
+                var searchSupportLink = "http://help.feweekly.com";
                 util.sendMessage({action: "openTab", url: searchSupportLink});
-                evt.preventDefault();
+                e.preventDefault();
             });
 
-            $('#send-us-an-email-link').click(function (evt) {
-                var emailURL = util.isChrome() ? "http://help.getpocket.com/customer/portal/emails/new?email%5Bsubject%5D=Question+about+Pocket+Extension+for+Chrome" : "http://help.getpocket.com/customer/portal/emails/new?email%5Bsubject%5D=Question+about+Pocket+Extension+for+Safari";
+            $('#send-us-an-email-link').click(function (e) {
+                var emailURL = "mailto:feweeklymaster@gmail.com?subject=Question about Feweekly Extension for " + (util.isChrome() ? "Chrome" : "Safari");
                 util.sendMessage({action: "openTab", url: emailURL});
-                evt.preventDefault();
-            });
-
-            $('#get-in-touch-on-twitter-link').click(function (evt) {
-                var twitterText = util.isChrome() ? "%23chrome " : "%23safari ";
-                var twitterLink = "https://twitter.com/intent/tweet?screen_name=pocketsupport&text=" + twitterText;
-                util.sendMessage({action: "openTab", url: twitterLink});
-                evt.preventDefault();
+                e.preventDefault();
             });
 
         }());
@@ -90,7 +72,7 @@
             }
 
             // Placeholder strings for mac and windows
-            var placeholderString = (util.isMac() ? '⌘+⇧+P' : 'ctrl+shift+S');
+            var placeholderString = (util.isMac() ? '⌘+⇧+S' : 'ctrl+shift+S');
             $('#keyboard-shortcut-text').attr('placeholder', placeholderString);
 
             // Variables for transformation between keyCode and strings that
@@ -145,11 +127,9 @@
                 // Backspace key empty the input field
                 if (keyCode === 8) {
                     $(this).val('');
-                }
-                else if (keyCode === 13 || keyCode === 27) {
+                } else if (keyCode === 13 || keyCode === 27) {
                     $(this).blur();
-                }
-                else {
+                } else {
                     // Get key
                     var keyString = _MODIFIERS[keyCode] ||
                                     _MAP[keyCode] ||
@@ -180,7 +160,7 @@
                     return false;
                 };
 
-                $(".shortcut-info").text("Record a new shortcut");
+                $(".shortcut-info").text("请按下快捷键");
             });
 
             // In the focus out try to save the keyboard shortcut
@@ -203,11 +183,9 @@
                     key = 'keyboard-shortcut-add';
                     value = $('#keyboard-shortcut-text').attr('placeholder');
                     util.sendMessage({action: "setSetting", key: key, value: value});
-                }
-                else if (!validKeyboardShortcut(keyboardShortcut)) {
+                } else if (!validKeyboardShortcut(keyboardShortcut)) {
                     $(this).addClass('error');
-                }
-                else {
+                } else {
                     key = 'keyboard-shortcut-add';
                     value = keyboardShortcut;
                     util.sendMessage({action: "setSetting", key: key, value: value});
@@ -217,12 +195,7 @@
             });
         }());
 
-        (function initDebug() {
-        })();
-
         updateUI();
-
-        checkForValidToken();
 
     }
 
@@ -231,9 +204,8 @@
         var keyboardShortcut = $('#keyboard-shortcut-text').val();
         if (placeholder === keyboardShortcut) {
             $(".shortcut-info").text("");
-        }
-        else {
-            var resetToDefault = $("<a href='#''>Reset to default</a>");
+        } else {
+            var resetToDefault = $("<a href='#''>恢复默认</a>");
             resetToDefault.click(function (evt) {
                 $('#keyboard-shortcut-text').removeClass('error');
                 util.sendMessage({action: "setSetting", key: 'keyboard-shortcut-add', value: placeholder});
@@ -244,23 +216,15 @@
             });
             $(".shortcut-info").html(resetToDefault);
         }
-    }
 
-    function checkForValidToken() {
-        // Check if the user has still a valid token
-        if (navigator.onLine) {
-            util.sendMessage({action: "isValidToken"}, function (resp) {
-                if (resp.value === false) {
-                    util.sendMessage({action: "getSetting", key: "username"}, function (response) {
-                        if (response.value !== "") {
-                            util.sendMessage({action: "logout"}, function () {
-                                updateUI();
-                            });
-                        }
-                    });
-                }
-            });
-        }
+        util.sendMessage({action: "getSetting", key: 'keyboard-shortcut'}, function (response) {
+            var keyboardShortcutEnabled = response.value;
+            if (keyboardShortcutEnabled === 'true') {
+                $('#keyboard-shortcut-checkbox').attr('checked', true);
+            } else {
+                $('#keyboard-shortcut-checkbox').attr('checked', false);
+            }
+        });
     }
 
     util.addMessageListener(function (request) {

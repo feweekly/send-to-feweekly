@@ -9,36 +9,38 @@
         <script src="../js/option.js" type="text/javascript" charset="utf-8"></script>
     </head>
     <body>
-        <div id="content">
-            <div id="header">
-                <img width="283" height="52" src="../img/Feweekly-Chrome-OptionsLogo@2x.png">
+        <div id="content" class="content">
+            <div id="header" class="header">
+                <img width="225" height="50" src="../img/Feweekly-Chrome-OptionsLogo@2x.png">
             </div>
-            <div id="content-inner-container">
-                <h2>OPTIONS</h2>
-                <div class="section-wrapper">
-                    <h3>Logged in as: </h3>
+            <div id="content-inner-container" class="content-inner-container">
+                <h2 class="content-header">配置</h2>
+
+                <div class="section-wrapper section-wrapper--subscribe">
+                    <h3 class="section-header">邮&nbsp;&nbsp;&nbsp;箱：</h3>
                     <ul class="section-item-list">
-                        <li><span id="username-field"></span> <span id="logout-link-wrapper">(<a id="logout-link" href='#'>logout</a>)</span><span id="login-link-wrapper"><a id="login-link" href="#">Click here to log in</a></span></li>
+                        <li><span id="email-field"></span></span><span id="subscribe-link-wrapper"><a id="subscribe-link" href="javascript:void(0);">点此订阅</a></span></li>
                     </ul>
                 </div>
-                <div class="section-wrapper" id="ril-keyboard-shortcut">
-                    <h3>Keyboard Shortcut:</h3>
+
+                <div class="section-wrapper section-wrapper--shortcut" id="feweekly-keyboard-shortcut">
+                    <h3 class="section-header">快捷键：</h3>
                     <ul class="section-item-list">
-                        <li><input id="keyboard-shortcut-checkbox" type="checkbox" class="checkbox" /><label for="keyboard-shortcut-checkbox">Enabled</label></li>
+                        <li><input id="keyboard-shortcut-checkbox" type="checkbox" class="checkbox" /><label for="keyboard-shortcut-checkbox">启用</label></li>
                         <li><input id="keyboard-shortcut-text" type="text" class="text" placeholder="alt+b"/></li>
                         <li class="shortcut-info"></li>
                     </ul>
                 </div>
 
-                <div class="section-wrapper" id="ril-support">
-                    <h3>Questions about Feweekly?</h3>
-                    <ul class="section-item-list ril-support-text">
-                        <li><a href="#" id="search-support-link">Search support</a>, <a href="#" id="send-us-an-email-link">send us an email</a> or </br><a href="#" id="get-in-touch-on-twitter-link">get in touch on Twitter</a>.</li>
+                <div class="section-wrapper section-wrapper--support" id="feweekly-support">
+                    <h3 class="section-header">需要帮助？</h3>
+                    <ul class="section-item-list feweekly-support-text">
+                        <li><a href="javascript:void(0);" id="search-support-link">帮助文档</a>, <a href="javascript:void(0);" id="send-us-an-email-link">给我们发邮件</a></li>
                     </ul>
                     <div class="clear"></div>
                 </div>
             </div>
         </div>
-        <div id="copyright">&copy; Copyright 2013 Read It Later Inc.</div>
+        <div id="copyright">&copy; 版权所有 2013 feweekly.com</div>
     </body>
 </html>

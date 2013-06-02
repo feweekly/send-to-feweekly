@@ -258,8 +258,7 @@
             } else {
                 chrome.extension.onRequest.addListener(listener);
             }
-        }
-        else if(isSafari()) {
+        } else if(isSafari()) {
             window.safari.self.addEventListener("message", function (thingy) {
                 listener(thingy.message, thingy, function (){});
             });
@@ -273,8 +272,7 @@
             } else {
                 chrome.extension.sendRequest(message, cb);
             }
-        }
-        else if(isSafari()) {
+        } else if(isSafari()) {
             if (cb) {
                 message["__cbId"] = Callbacker.addCb(cb);
             }
@@ -285,7 +283,6 @@
 
 
     // Keyboard Shortcut specific functions
-
     function activateKeyboardShortcut() {
         sendMessage({action: "getSetting", key: "keyboard-shortcut-add"}, function (response) {
             // Delete old keyboard shortcut handler
@@ -316,8 +313,7 @@
         sendMessage({action: "getSetting", key: "keyboard-shortcut"}, function (response){
             if (response.value === "true" || response.value === true) {
                 activateKeyboardShortcut();
-            }
-            else if (response.value === "false" || response.value === false) {
+            } else if (response.value === "false" || response.value === false) {
                 key.deleteScope('all');
             }
         });
