@@ -373,15 +373,15 @@ $(function () {
         // Check for first time installation
         if (util.getSetting('installed') !== 'true') {
             util.setSetting('installed', 'true');
-            util.openTabWithURL(feweekly.domain + '/pages/display/installed');
+            util.openTabWithURL(feweekly.getDomain() + '/pages/display/installed');
         // Show upgrade message
         } else if (SHOW_RELEASE_NOTES && util.getSetting('installed') === 'true' && (!util.getSetting('lastInstalledVersion') || util.getSetting('lastInstalledVersion') !== VERSION)) {
             var browser = util.isChrome() ? 'chrome' : 'safari';
-            util.openTabWithURL(feweekly.domain + '/pages/display/updated?browser=' + browser + 'newversion=' + VERSION + '&oldversion=' + util.getSetting('lastInstalledVersion'));
+            util.openTabWithURL(feweekly.getDomain() + '/pages/display/updated?browser=' + browser + 'newversion=' + VERSION + '&oldversion=' + util.getSetting('lastInstalledVersion'));
         }
 
         util.setSetting('lastInstalledVersion', VERSION);
-        util.setSetting('debug', true);
+        util.setSetting('debug', false);
 
     }());
 });

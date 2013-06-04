@@ -16,6 +16,10 @@ var feweekly = (function () {
         return util.getSetting('debug') !== undefined && util.getSetting('debug');
     }
 
+    function getDomain() {
+        return isDebug() ? domainDebug : domain;
+    }
+
     /**
      * Submit a link to feweeekly
      * @param {String} title
@@ -36,7 +40,7 @@ var feweekly = (function () {
         feweekly.log('add', JSON.stringify(data));
 
         $.ajax({
-            url: feweekly.domain + controbuteAPI,
+            url: feweekly.getDomain() + controbuteAPI,
             type: 'POST',
             data: data,
             dataType: 'json',
@@ -67,7 +71,7 @@ var feweekly = (function () {
 
         try {
             $.ajax({
-                url: feweekly.domain + subscribeAPI,
+                url: feweekly.getDomain() + subscribeAPI,
                 type: 'POST',
                 data: {
                     'data[email]': email,
@@ -104,11 +108,11 @@ var feweekly = (function () {
     return {
         add: add,
         subscribe: subscribe,
+        isSubscribed: isSubscribed,
+        isDebug: isDebug,
+        getDomain: getDomain,
         log: log,
         version: version,
-        debug: isDebug(),
-        domain: isDebug() ? domainDebug : domain,
-        isSubscribed: isSubscribed,
         showReleaseNotes: showReleaseNotes
     };
 
