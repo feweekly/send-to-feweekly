@@ -123,6 +123,11 @@ $(function () {
             sendResponse({});
             return false;
 
+        } else if (request.action === 'clearly') {
+            feweekly.log(request.results);
+            sendResponse({});
+            return false;
+
         } else if (request.action === 'openTab') {
             util.openTabWithURL(request.url);
             sendResponse({});
