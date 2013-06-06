@@ -19,11 +19,11 @@ $(function () {
         util.sendMessageToTab(tab, {status: 'error', error: chrome.i18n.getMessage('errorInvalid')});
     }
 
-    function loadNotificationUIIntoPage(tab, url) {
+    function loadNotificationUIIntoPage(tab, url, callback) {
         if (url) {
             util.executeScriptInTab(tab, 'window.___FEWKLY__URL_TO_SAVE = "' + url + '"');
         }
-        util.executeScriptFromURLInTab(tab, 'js/notify.js');
+        util.executeMultiScriptFromURLInTab(tab, ['js/zepto.min.js', 'js/clearly.js', 'js/notify.js'], callback);
     }
 
     function showSavedToolbarIcon(tabId) {
@@ -71,26 +71,26 @@ $(function () {
                 return;
             }
 
-            loadNotificationUIIntoPage(tab, url);
+            loadNotificationUIIntoPage(tab, url, function () {
+                feweekly.add(title, url, {
+                    success: function () {
+                        util.sendMessageToTab(tab, {status: 'success'});
+                        util.executeScriptInTab(tab, 'window.___FEWKLY__URL_SAVED = "' + url + '"');
+                    },
+                    error: function (status, xhr) {
+                        // We have to delay the error message injection to let the
+                        // overlay have time to initialize
+                        setTimeout(function () {
+                            // Check for online status
+                            if (!navigator.onLine) {
+                                util.sendMessageToTab(tab, {status: 'error', error: chrome.i18n.getMessage('errorOffline')});
+                                return;
+                            }
 
-            feweekly.add(title, url, {
-                success: function () {
-                    util.sendMessageToTab(tab, {status: 'success'});
-                    util.executeScriptInTab(tab, 'window.___FEWKLY__URL_SAVED = "' + url + '"');
-                },
-                error: function (status, xhr) {
-                    // We have to delay the error message injection to let the
-                    // overlay have time to initialize
-                    setTimeout(function () {
-                        // Check for online status
-                        if (!navigator.onLine) {
-                            util.sendMessageToTab(tab, {status: 'error', error: chrome.i18n.getMessage('errorOffline')});
-                            return;
-                        }
-
-                        util.sendMessageToTab(tab, {status: 'error', error: xhr.getResponseHeader('X-Error')});
-                    }, 100);
-                }
+                            util.sendMessageToTab(tab, {status: 'error', error: xhr.getResponseHeader('X-Error')});
+                        }, 100);
+                    }
+                });
             });
         }
 
@@ -144,37 +144,37 @@ $(function () {
                 return false;
             }
 
-            loadNotificationUIIntoPage(sender.tab, url);
-
-            feweekly.add(title, url, {
-                referer: request.referer,
-                success: function () {
-                    if (request.showSavedToolbarIcon && request.showSavedToolbarIcon === true) {
-                        showSavedToolbarIcon(tabId);
-                    }
-
-                    util.executeScriptInTab(sender.tab, 'window.___FEWKLY__URL_SAVED = "' + url + '"');
-                    util.sendMessageToTab(sender.tab, {status: 'success'});
-                    sendResponse({status: 'success'});
-                },
-                error: function (status, xhr) {
-                    // Inject the error message into the overlay
-                    setTimeout(function () {
-                        // Check for online status
-                        if (!navigator.onLine) {
-                            util.sendMessageToTab(sender.tab, {status: 'error', error: chrome.i18n.getMessage('errorOffline')});
-                            return;
+            loadNotificationUIIntoPage(sender.tab, url, function () {
+                feweekly.add(title, url, {
+                    referer: request.referer,
+                    success: function () {
+                        if (request.showSavedToolbarIcon && request.showSavedToolbarIcon === true) {
+                            showSavedToolbarIcon(tabId);
                         }
 
-                        util.sendMessageToTab(sender.tab, {status: 'error', error: xhr.getResponseHeader('X-Error')});
-                    }, 100);
+                        util.executeScriptInTab(sender.tab, 'window.___FEWKLY__URL_SAVED = "' + url + '"');
+                        util.sendMessageToTab(sender.tab, {status: 'success'});
+                        sendResponse({status: 'success'});
+                    },
+                    error: function (status, xhr) {
+                        // Inject the error message into the overlay
+                        setTimeout(function () {
+                            // Check for online status
+                            if (!navigator.onLine) {
+                                util.sendMessageToTab(sender.tab, {status: 'error', error: chrome.i18n.getMessage('errorOffline')});
+                                return;
+                            }
 
-                    sendResponse({status: 'error'});
-                }
+                            util.sendMessageToTab(sender.tab, {status: 'error', error: xhr.getResponseHeader('X-Error')});
+                        }, 100);
+
+                        sendResponse({status: 'error'});
+                    }
+                });
             });
-
-            return true;
         }
+
+        return true;
     });
 
 
@@ -197,27 +197,27 @@ $(function () {
             return;
         }
 
-        loadNotificationUIIntoPage(tab, url);
+        loadNotificationUIIntoPage(tab, url, function () {
+            feweekly.add(title, url, {
+                success: function () {
+                    showSavedToolbarIcon(tab.id);
+                    util.sendMessageToTab(tab, {'status': 'success'});
+                    util.executeScriptInTab(tab, 'window.___FEWKLY__URL_SAVED = "' + url + '"');
+                },
+                error: function (status, xhr) {
+                    // We have to delay the error message injection to let the
+                    // overlay have time to initialize
+                    setTimeout(function () {
+                        // Check for online status
+                        if (!navigator.onLine) {
+                            util.sendMessageToTab(tab, {status: 'error', error: chrome.i18n.getMessage('errorOffline')});
+                            return;
+                        }
 
-        feweekly.add(title, url, {
-            success: function () {
-                showSavedToolbarIcon(tab.id);
-                util.sendMessageToTab(tab, {'status': 'success'});
-                util.executeScriptInTab(tab, 'window.___FEWKLY__URL_SAVED = "' + url + '"');
-            },
-            error: function (status, xhr) {
-                // We have to delay the error message injection to let the
-                // overlay have time to initialize
-                setTimeout(function () {
-                    // Check for online status
-                    if (!navigator.onLine) {
-                        util.sendMessageToTab(tab, {status: 'error', error: chrome.i18n.getMessage('errorOffline')});
-                        return;
-                    }
-
-                    util.sendMessageToTab(tab, {status: 'error', error: xhr.getResponseHeader('X-Error')});
-                }, 100);
-            }
+                        util.sendMessageToTab(tab, {status: 'error', error: xhr.getResponseHeader('X-Error')});
+                    }, 100);
+                }
+            });
         });
     }
 

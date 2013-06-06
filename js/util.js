@@ -70,6 +70,24 @@ var util = {
         }
     },
 
+    // TODO 实现safari中的多脚本注入
+    executeMultiScriptFromURLInTab: function (tab, scripts, afterInject) {
+        var scriptURL = scripts.shift();
+        if (!scriptURL) {
+            if (afterInject) {
+                afterInject();
+            }
+            return;
+        }
+
+        if (util.isChrome()) {
+            chrome.tabs.executeScript(tab.id, {file: scriptURL}, function () {
+                util.executeMultiScriptFromURLInTab(tab, scripts, afterInject);
+            });
+        } else if (util.isSafari()) {
+        }
+    },
+
     executeScriptFromURLInTabWithCallback: function (tab, scriptURL, cb) {
         if (util.isChrome()) {
             chrome.tabs.executeScript(tab.id, {file: scriptURL}, cb);
