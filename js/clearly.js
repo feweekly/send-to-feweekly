@@ -83,12 +83,12 @@ window.clearlyResults = (function () {
         // CJK: Chnese, Japanese, Korean -- HAN character set
 
         // text length,
-        clearly.measureText__getTextLength = function (_the_text) {
+        clearly.getTextLength = function (_the_text) {
             return _the_text.replace(/[\s\n\r]+/gi, '').length;
         };
 
         // word count,
-        clearly.measureText__getWordCount = function (_the_text) {
+        clearly.getWordCount = function (_the_text) {
             var _text = _the_text;
             // do stuff
             _text = _text.replace(/[\s\n\r]+/gi, ' ');
@@ -128,12 +128,12 @@ window.clearlyResults = (function () {
 
         // content
         clearly.getContent = function () {
-            clearly.getContent__detectLanguage();
-            return clearly.getContent__find();
+            clearly.detectLanguage();
+            return clearly.find();
         };
 
         // Detect language by randomly selected paragraphs from page
-        clearly.getContent__detectLanguage = function () {
+        clearly.detectLanguage = function () {
             clearly.language = 'general';
 
             // the text - start with title
@@ -181,7 +181,7 @@ window.clearlyResults = (function () {
         };
 
         // Explore the node recursively, get candidate nodes
-        clearly.getContent__exploreNodeAndGetStuff = function (_nodeToExplore, _justExploring) {
+        clearly.exploreNodeAndGetStuff = function (_nodeToExplore, _justExploring) {
             var _global__element_index = 0,
                 _global__inside_link = false,
                 _global__inside_link__element_index = 0,
@@ -195,7 +195,8 @@ window.clearlyResults = (function () {
                 _global__above__links_text = '',
                 _return__containers = [],
                 _return__candidates = [],
-                _return__links = [];
+                _return__links = [],
+                _return__images = [];
 
             // recursive function
             var _recursive = function (_node) {
@@ -289,8 +290,8 @@ window.clearlyResults = (function () {
                     var _nodeText = _node.nodeValue;
 
                     // result
-                    _result._length__plain_text = clearly.measureText__getTextLength(_nodeText);
-                    _result._count__plain_words = clearly.measureText__getWordCount(_nodeText);
+                    _result._length__plain_text = clearly.getTextLength(_nodeText);
+                    _result._count__plain_words = clearly.getWordCount(_nodeText);
                     if (_global__inside_link) {
                         _global__length__above_links_text += _result._length__plain_text;
                         _global__count__above_links_words += _result._count__plain_words;
@@ -350,10 +351,12 @@ window.clearlyResults = (function () {
                     case ((_width * _height) >= 50000):
                     case ((_width >= 350) && _height >= 75):
                         _result._is__image_large = true;
+                        _return__images.push(_result);
                         break;
                     case ((_width * _height) >= 20000):
                     case ((_width >= 150) && (_height >= 150)):
                         _result._is__image_medium = true;
+                        _return__images.push(_result);
                         break;
                     case ((_width <= 5) && (_height <= 5)):
                         _result._is__image_skip = true;
@@ -466,11 +469,12 @@ window.clearlyResults = (function () {
             return {
                 '_containers': _return__containers,
                 '_candidates': _return__candidates,
-                '_links': _return__links
+                '_links': _return__links,
+                '_images': _return__images
             };
         };
 
-        clearly.getContent__processCandidates = function (_candidatesToProcess) {
+        clearly.processCandidates = function (_candidatesToProcess) {
             // process this var
             var _candidates = _candidatesToProcess;
 
@@ -508,7 +512,7 @@ window.clearlyResults = (function () {
                 }
 
                 // candidate details
-                _candidates[i]['__candidate_details'] = clearly.getContent__computeDetailsForCandidate(_candidates[i], _main);
+                _candidates[i]['__candidate_details'] = clearly.computeDetailsForCandidate(_candidates[i], _main);
 
                 // pieces -- do this here because _main doesn't yet have a pieces count
                 // set pieces
@@ -518,7 +522,7 @@ window.clearlyResults = (function () {
                 _candidates[i]['__candidate_details']['_ratio__count__pieces_to_total_pieces'] = (_count__pieces / (_candidates[0]._count__pieces + 1));
 
                 // points
-                _candidates[i].__points_history = clearly.getContent__computePointsForCandidate(_candidates[i], _main);
+                _candidates[i].__points_history = clearly.computePointsForCandidate(_candidates[i], _main);
                 _candidates[i].__points = _candidates[i].__points_history[0];
             }
 
@@ -538,7 +542,7 @@ window.clearlyResults = (function () {
             return _candidates;
         };
 
-        clearly.getContent__computeDetailsForCandidate = function (_e, _main) {
+        clearly.computeDetailsForCandidate = function (_e, _main) {
             var _r = {};
 
             // bad candidate
@@ -583,7 +587,7 @@ window.clearlyResults = (function () {
             return _r;
         };
 
-        clearly.getContent__computePointsForCandidate = function (_e, _main) {
+        clearly.computePointsForCandidate = function (_e, _main) {
             var _details = _e.__candidate_details,
                 _points_history = [],
                 _really_big = ((_main._length__plain_text / 65) > 250);
@@ -609,44 +613,44 @@ window.clearlyResults = (function () {
             _points_history.unshift(((0 + (_points_history[0] * 3) + (_points_history[0] / _divide__pieces) + (_points_history[0] / _divide__candidates) + (_points_history[0] / _divide__containers)) / 6));
 
             // total text
-            clearly.getContent__computePointsForCandidate__do(0.10, 2, (1 - (1 - _details._ratio__length__plain_text_to_total_plain_text)), _points_history);
-            clearly.getContent__computePointsForCandidate__do(0.10, 2, (1 - (1 - _details._ratio__count__plain_words_to_total_plain_words)), _points_history);
+            clearly.computePointsForCandidate__do(0.10, 2, (1 - (1 - _details._ratio__length__plain_text_to_total_plain_text)), _points_history);
+            clearly.computePointsForCandidate__do(0.10, 2, (1 - (1 - _details._ratio__count__plain_words_to_total_plain_words)), _points_history);
             if (_really_big) {
-                clearly.getContent__computePointsForCandidate__do(0.10, 4, (1 - (1 - _details._ratio__length__plain_text_to_total_plain_text)), _points_history);
-                clearly.getContent__computePointsForCandidate__do(0.10, 4, (1 - (1 - _details._ratio__count__plain_words_to_total_plain_words)), _points_history);
+                clearly.computePointsForCandidate__do(0.10, 4, (1 - (1 - _details._ratio__length__plain_text_to_total_plain_text)), _points_history);
+                clearly.computePointsForCandidate__do(0.10, 4, (1 - (1 - _details._ratio__count__plain_words_to_total_plain_words)), _points_history);
             }
 
             // text above
-            clearly.getContent__computePointsForCandidate__do(0.10, 5, (1 - _details._ratio__length__above_plain_text_to_total_plain_text), _points_history);
-            clearly.getContent__computePointsForCandidate__do(0.10, 5, (1 - _details._ratio__count__above_plain_words_to_total_plain_words), _points_history);
+            clearly.computePointsForCandidate__do(0.10, 5, (1 - _details._ratio__length__above_plain_text_to_total_plain_text), _points_history);
+            clearly.computePointsForCandidate__do(0.10, 5, (1 - _details._ratio__count__above_plain_words_to_total_plain_words), _points_history);
             if (_really_big) {
-                clearly.getContent__computePointsForCandidate__do(0.10, 10, (1 - _details._ratio__length__above_plain_text_to_total_plain_text), _points_history);
-                clearly.getContent__computePointsForCandidate__do(0.10, 10, (1 - _details._ratio__count__above_plain_words_to_total_plain_words), _points_history);
+                clearly.computePointsForCandidate__do(0.10, 10, (1 - _details._ratio__length__above_plain_text_to_total_plain_text), _points_history);
+                clearly.computePointsForCandidate__do(0.10, 10, (1 - _details._ratio__count__above_plain_words_to_total_plain_words), _points_history);
             }
 
             // links outer
-            clearly.getContent__computePointsForCandidate__do(0.75, 1, (1 - _details._ratio__length__links_text_to_total_links_text), _points_history);
-            clearly.getContent__computePointsForCandidate__do(0.75, 1, (1 - _details._ratio__count__links_words_to_total_links_words), _points_history);
-            clearly.getContent__computePointsForCandidate__do(0.75, 1, (1 - _details._ratio__count__links_to_total_links), _points_history);
+            clearly.computePointsForCandidate__do(0.75, 1, (1 - _details._ratio__length__links_text_to_total_links_text), _points_history);
+            clearly.computePointsForCandidate__do(0.75, 1, (1 - _details._ratio__count__links_words_to_total_links_words), _points_history);
+            clearly.computePointsForCandidate__do(0.75, 1, (1 - _details._ratio__count__links_to_total_links), _points_history);
 
             // links inner
             var __lr = (clearly.language === 'cjk' ? 0.75 : 0.50);
-            clearly.getContent__computePointsForCandidate__do(__lr, 1, (1 - _details._ratio__length__links_text_to_plain_text), _points_history);
-            clearly.getContent__computePointsForCandidate__do(__lr, 1, (1 - _details._ratio__count__links_words_to_plain_words), _points_history);
-            clearly.getContent__computePointsForCandidate__do(__lr, 1, (1 - _details._ratio__length__links_text_to_all_text), _points_history);
-            clearly.getContent__computePointsForCandidate__do(__lr, 1, (1 - _details._ratio__count__links_words_to_all_words), _points_history);
-            clearly.getContent__computePointsForCandidate__do(__lr, 1, (1 - _details._ratio__count__links_to_plain_words), _points_history);
+            clearly.computePointsForCandidate__do(__lr, 1, (1 - _details._ratio__length__links_text_to_plain_text), _points_history);
+            clearly.computePointsForCandidate__do(__lr, 1, (1 - _details._ratio__count__links_words_to_plain_words), _points_history);
+            clearly.computePointsForCandidate__do(__lr, 1, (1 - _details._ratio__length__links_text_to_all_text), _points_history);
+            clearly.computePointsForCandidate__do(__lr, 1, (1 - _details._ratio__count__links_words_to_all_words), _points_history);
+            clearly.computePointsForCandidate__do(__lr, 1, (1 - _details._ratio__count__links_to_plain_words), _points_history);
 
             // candidates, pieces
-            clearly.getContent__computePointsForCandidate__do(0.75, 1, (1 - _details._ratio__count__candidates_to_total_candidates), _points_history);
-            clearly.getContent__computePointsForCandidate__do(0.75, 1, (1 - _details._ratio__count__containers_to_total_containers), _points_history);
-            clearly.getContent__computePointsForCandidate__do(0.75, 1, (1 - _details._ratio__count__pieces_to_total_pieces), _points_history);
+            clearly.computePointsForCandidate__do(0.75, 1, (1 - _details._ratio__count__candidates_to_total_candidates), _points_history);
+            clearly.computePointsForCandidate__do(0.75, 1, (1 - _details._ratio__count__containers_to_total_containers), _points_history);
+            clearly.computePointsForCandidate__do(0.75, 1, (1 - _details._ratio__count__pieces_to_total_pieces), _points_history);
 
             // return -- will get [0] as the actual final points
             return _points_history;
         };
 
-        clearly.getContent__processCandidatesSecond = function (_processedCandidates) {
+        clearly.processCandidatesSecond = function (_processedCandidates) {
             var _candidates = _processedCandidates,
                 _main = _candidates[0];
 
@@ -681,11 +685,11 @@ window.clearlyResults = (function () {
                 _candidates[i].__second_length__above_plain_text = (_candidates[i]._length__above_plain_text - _main._length__above_plain_text);
                 _candidates[i].__second_count__above_plain_words = (_candidates[i]._count__above_plain_words - _main._count__above_plain_words);
                 // candidate details
-                _candidates[i]['__candidate_details_second'] = clearly.getContent__computeDetailsForCandidateSecond(_candidates[i], _main);
+                _candidates[i]['__candidate_details_second'] = clearly.computeDetailsForCandidateSecond(_candidates[i], _main);
                 // check some more
 
                 // points
-                _candidates[i].__points_history_second = clearly.getContent__computePointsForCandidateSecond(_candidates[i], _main);
+                _candidates[i].__points_history_second = clearly.computePointsForCandidateSecond(_candidates[i], _main);
                 _candidates[i].__points_second = _candidates[i].__points_history_second[0];
             }
 
@@ -705,7 +709,7 @@ window.clearlyResults = (function () {
             return _candidates;
         };
 
-        clearly.getContent__computeDetailsForCandidateSecond = function (_e, _main) {
+        clearly.computeDetailsForCandidateSecond = function (_e, _main) {
             var _r = {};
 
             // bad candidate
@@ -744,7 +748,7 @@ window.clearlyResults = (function () {
             return _r;
         };
 
-        clearly.getContent__computePointsForCandidateSecond = function (_e, _main) {
+        clearly.computePointsForCandidateSecond = function (_e, _main) {
             var _details = _e.__candidate_details,
                 _details_second = _e.__candidate_details_second,
                 _points_history = [];
@@ -765,39 +769,39 @@ window.clearlyResults = (function () {
             _points_history.unshift(((0 + (_points_history[0] * 3) + ((_points_history[0] / _divide__pieces) * 2) + ((_points_history[0] / _divide__candidates) * 2) + ((_points_history[0] / _divide__containers) * 2)) / 9));
 
             // total text
-            clearly.getContent__computePointsForCandidate__do(0.50, 1, (1 - (1 - _details_second._ratio__length__plain_text_to_total_plain_text)), _points_history);
-            clearly.getContent__computePointsForCandidate__do(0.50, 1, (1 - (1 - _details_second._ratio__count__plain_words_to_total_plain_words)), _points_history);
+            clearly.computePointsForCandidate__do(0.50, 1, (1 - (1 - _details_second._ratio__length__plain_text_to_total_plain_text)), _points_history);
+            clearly.computePointsForCandidate__do(0.50, 1, (1 - (1 - _details_second._ratio__count__plain_words_to_total_plain_words)), _points_history);
 
             // text above
             var __ar = (clearly.language === 'cjk' ? 0.50 : 0.10);
-            clearly.getContent__computePointsForCandidate__do(__ar, 1, (1 - _details_second._ratio__length__above_plain_text_to_total_plain_text), _points_history);
-            clearly.getContent__computePointsForCandidate__do(__ar, 1, (1 - _details_second._ratio__count__above_plain_words_to_total_plain_words), _points_history);
-            clearly.getContent__computePointsForCandidate__do(__ar, 1, (1 - _details_second._ratio__length__above_plain_text_to_plain_text), _points_history);
-            clearly.getContent__computePointsForCandidate__do(__ar, 1, (1 - _details_second._ratio__count__above_plain_words_to_plain_words), _points_history);
+            clearly.computePointsForCandidate__do(__ar, 1, (1 - _details_second._ratio__length__above_plain_text_to_total_plain_text), _points_history);
+            clearly.computePointsForCandidate__do(__ar, 1, (1 - _details_second._ratio__count__above_plain_words_to_total_plain_words), _points_history);
+            clearly.computePointsForCandidate__do(__ar, 1, (1 - _details_second._ratio__length__above_plain_text_to_plain_text), _points_history);
+            clearly.computePointsForCandidate__do(__ar, 1, (1 - _details_second._ratio__count__above_plain_words_to_plain_words), _points_history);
 
             // links outer
-            clearly.getContent__computePointsForCandidate__do(0.75, 1, (1 - _details_second._ratio__count__links_to_total_links), _points_history);
-            clearly.getContent__computePointsForCandidate__do(0.75, 1, (1 - _details_second._ratio__length__links_text_to_total_links_text), _points_history);
-            clearly.getContent__computePointsForCandidate__do(0.75, 1, (1 - _details_second._ratio__count__links_words_to_total_links_words), _points_history);
+            clearly.computePointsForCandidate__do(0.75, 1, (1 - _details_second._ratio__count__links_to_total_links), _points_history);
+            clearly.computePointsForCandidate__do(0.75, 1, (1 - _details_second._ratio__length__links_text_to_total_links_text), _points_history);
+            clearly.computePointsForCandidate__do(0.75, 1, (1 - _details_second._ratio__count__links_words_to_total_links_words), _points_history);
 
             // links inner
             var __lr = (clearly.language === 'cjk' ? 0.75 : 0.50);
-            clearly.getContent__computePointsForCandidate__do(__lr, 1, (1 - _details._ratio__length__links_text_to_plain_text), _points_history);
-            clearly.getContent__computePointsForCandidate__do(__lr, 1, (1 - _details._ratio__count__links_words_to_plain_words), _points_history);
-            clearly.getContent__computePointsForCandidate__do(__lr, 1, (1 - _details_second._ratio__length__links_text_to_all_text), _points_history);
-            clearly.getContent__computePointsForCandidate__do(__lr, 1, (1 - _details_second._ratio__count__links_words_to_all_words), _points_history);
-            clearly.getContent__computePointsForCandidate__do(__lr, 1, (1 - _details_second._ratio__count__links_to_plain_words), _points_history);
+            clearly.computePointsForCandidate__do(__lr, 1, (1 - _details._ratio__length__links_text_to_plain_text), _points_history);
+            clearly.computePointsForCandidate__do(__lr, 1, (1 - _details._ratio__count__links_words_to_plain_words), _points_history);
+            clearly.computePointsForCandidate__do(__lr, 1, (1 - _details_second._ratio__length__links_text_to_all_text), _points_history);
+            clearly.computePointsForCandidate__do(__lr, 1, (1 - _details_second._ratio__count__links_words_to_all_words), _points_history);
+            clearly.computePointsForCandidate__do(__lr, 1, (1 - _details_second._ratio__count__links_to_plain_words), _points_history);
 
             // candidates, containers, pieces
-            clearly.getContent__computePointsForCandidate__do(0.10, 2, (1 - _details_second._ratio__count__candidates_to_total_candidates), _points_history);
-            clearly.getContent__computePointsForCandidate__do(0.10, 2, (1 - _details_second._ratio__count__containers_to_total_containers), _points_history);
-            clearly.getContent__computePointsForCandidate__do(0.10, 2, (1 - _details_second._ratio__count__pieces_to_total_pieces), _points_history);
+            clearly.computePointsForCandidate__do(0.10, 2, (1 - _details_second._ratio__count__candidates_to_total_candidates), _points_history);
+            clearly.computePointsForCandidate__do(0.10, 2, (1 - _details_second._ratio__count__containers_to_total_containers), _points_history);
+            clearly.computePointsForCandidate__do(0.10, 2, (1 - _details_second._ratio__count__pieces_to_total_pieces), _points_history);
 
             // return -- will get [0] as the actual final points
             return _points_history;
         };
 
-        clearly.getContent__computePointsForCandidateThird = function (_e, _main) {
+        clearly.computePointsForCandidateThird = function (_e, _main) {
             var _details = _e.__candidate_details,
                 _details_second = _e.__candidate_details_second,
                 _points_history = [];
@@ -818,34 +822,34 @@ window.clearlyResults = (function () {
             _points_history.unshift(((0 + (_points_history[0] * 3) + ((_points_history[0] / _divide__pieces) * 2) + ((_points_history[0] / _divide__candidates) * 2) + ((_points_history[0] / _divide__containers) * 2)) / 9));
 
             // total text
-            clearly.getContent__computePointsForCandidate__do(0.75, 1, (1 - (1 - _details_second._ratio__length__plain_text_to_total_plain_text)), _points_history);
-            clearly.getContent__computePointsForCandidate__do(0.75, 1, (1 - (1 - _details_second._ratio__count__plain_words_to_total_plain_words)), _points_history);
+            clearly.computePointsForCandidate__do(0.75, 1, (1 - (1 - _details_second._ratio__length__plain_text_to_total_plain_text)), _points_history);
+            clearly.computePointsForCandidate__do(0.75, 1, (1 - (1 - _details_second._ratio__count__plain_words_to_total_plain_words)), _points_history);
 
             // text above
-            clearly.getContent__computePointsForCandidate__do(0.50, 1, (1 - _details._ratio__length__above_plain_text_to_total_plain_text), _points_history);
-            clearly.getContent__computePointsForCandidate__do(0.50, 1, (1 - _details._ratio__count__above_plain_words_to_total_plain_words), _points_history);
-            clearly.getContent__computePointsForCandidate__do(0.10, 1, (1 - _details_second._ratio__length__above_plain_text_to_total_plain_text), _points_history);
-            clearly.getContent__computePointsForCandidate__do(0.10, 1, (1 - _details_second._ratio__count__above_plain_words_to_total_plain_words), _points_history);
-            clearly.getContent__computePointsForCandidate__do(0.10, 1, (1 - _details_second._ratio__length__above_plain_text_to_plain_text), _points_history);
-            clearly.getContent__computePointsForCandidate__do(0.10, 1, (1 - _details_second._ratio__count__above_plain_words_to_plain_words), _points_history);
+            clearly.computePointsForCandidate__do(0.50, 1, (1 - _details._ratio__length__above_plain_text_to_total_plain_text), _points_history);
+            clearly.computePointsForCandidate__do(0.50, 1, (1 - _details._ratio__count__above_plain_words_to_total_plain_words), _points_history);
+            clearly.computePointsForCandidate__do(0.10, 1, (1 - _details_second._ratio__length__above_plain_text_to_total_plain_text), _points_history);
+            clearly.computePointsForCandidate__do(0.10, 1, (1 - _details_second._ratio__count__above_plain_words_to_total_plain_words), _points_history);
+            clearly.computePointsForCandidate__do(0.10, 1, (1 - _details_second._ratio__length__above_plain_text_to_plain_text), _points_history);
+            clearly.computePointsForCandidate__do(0.10, 1, (1 - _details_second._ratio__count__above_plain_words_to_plain_words), _points_history);
 
             // links inner
-            clearly.getContent__computePointsForCandidate__do(0.50, 1, (1 - _details._ratio__length__links_text_to_all_text), _points_history);
-            clearly.getContent__computePointsForCandidate__do(0.50, 1, (1 - _details._ratio__count__links_words_to_all_words), _points_history);
-            clearly.getContent__computePointsForCandidate__do(0.50, 1, (1 - _details._ratio__length__links_text_to_plain_text), _points_history);
-            clearly.getContent__computePointsForCandidate__do(0.50, 1, (1 - _details._ratio__count__links_words_to_plain_words), _points_history);
-            clearly.getContent__computePointsForCandidate__do(0.50, 1, (1 - _details._ratio__count__links_to_plain_words), _points_history);
+            clearly.computePointsForCandidate__do(0.50, 1, (1 - _details._ratio__length__links_text_to_all_text), _points_history);
+            clearly.computePointsForCandidate__do(0.50, 1, (1 - _details._ratio__count__links_words_to_all_words), _points_history);
+            clearly.computePointsForCandidate__do(0.50, 1, (1 - _details._ratio__length__links_text_to_plain_text), _points_history);
+            clearly.computePointsForCandidate__do(0.50, 1, (1 - _details._ratio__count__links_words_to_plain_words), _points_history);
+            clearly.computePointsForCandidate__do(0.50, 1, (1 - _details._ratio__count__links_to_plain_words), _points_history);
 
             // candidates, pieces
-            clearly.getContent__computePointsForCandidate__do(0.50, 1, (1 - _details._ratio__count__candidates_to_total_candidates), _points_history);
-            clearly.getContent__computePointsForCandidate__do(0.50, 1, (1 - _details._ratio__count__containers_to_total_containers), _points_history);
-            clearly.getContent__computePointsForCandidate__do(0.50, 1, (1 - _details._ratio__count__pieces_to_total_pieces), _points_history);
+            clearly.computePointsForCandidate__do(0.50, 1, (1 - _details._ratio__count__candidates_to_total_candidates), _points_history);
+            clearly.computePointsForCandidate__do(0.50, 1, (1 - _details._ratio__count__containers_to_total_containers), _points_history);
+            clearly.computePointsForCandidate__do(0.50, 1, (1 - _details._ratio__count__pieces_to_total_pieces), _points_history);
 
             // return -- will get [0] as the actual final points
             return _points_history;
         };
 
-        clearly.getContent__computePointsForCandidate__do = function (_ratio_remaining, _power, _ratio, _points_history) {
+        clearly.computePointsForCandidate__do = function (_ratio_remaining, _power, _ratio, _points_history) {
             var _points_remaining = (_points_history[0] * _ratio_remaining),
                 _points_to_compute = (_points_history[0] - _points_remaining),
                 _points_return = 0;
@@ -860,10 +864,10 @@ window.clearlyResults = (function () {
             _points_history.unshift(_points_return);
         };
 
-        clearly.getContent__buildHTMLForNode = function (_nodeToBuildHTMLFor, _custom_mode) {
+        clearly.buildHTMLForNode = function (_nodeToBuildHTMLFor, _custom_mode) {
             var _global__element_index = 0,
                 _global__the_html = '',
-                _global__exploreNodeToBuildHTMLFor = clearly.getContent__exploreNodeAndGetStuff(_nodeToBuildHTMLFor, true);
+                _global__exploreNodeToBuildHTMLFor = clearly.exploreNodeAndGetStuff(_nodeToBuildHTMLFor, true);
 
             // custom
             switch (_custom_mode) {
@@ -959,7 +963,7 @@ window.clearlyResults = (function () {
 
                 // skipped link
                 if (_tag_name === 'a') {
-                    _explored = (_explored || clearly.getContent__exploreNodeAndGetStuff(_node, true));
+                    _explored = (_explored || clearly.exploreNodeAndGetStuff(_node, true));
                     switch (true) {
                     case (_explored._is__link_skip):
                     case (((_explored._count__images_small + _explored._count__images_skip) > 0) && (_explored._length__plain_text < 65)):
@@ -969,7 +973,7 @@ window.clearlyResults = (function () {
 
                 // link density
                 if (clearly.parsingOptions._elements_link_density.indexOf('|' + _tag_name + '|') > -1) {
-                    _explored = (_explored || clearly.getContent__exploreNodeAndGetStuff(_node, true));
+                    _explored = (_explored || clearly.exploreNodeAndGetStuff(_node, true));
                     switch (true) {
                     case (_explored._length__plain_text > (65 * 3 * 2)):
                     case (clearly.language === 'cjk' && (_explored._length__plain_text > (65 * 3 * 1))):
@@ -997,7 +1001,7 @@ window.clearlyResults = (function () {
 
                 // floating
                 if (clearly.parsingOptions._elements_floating.indexOf('|' + _tag_name + '|') > -1) {
-                    _explored = (_explored || clearly.getContent__exploreNodeAndGetStuff(_node, true));
+                    _explored = (_explored || clearly.exploreNodeAndGetStuff(_node, true));
                     switch (true) {
                     case (_explored._length__plain_text > (65 * 3 * 2)):
                     case (clearly.language === 'cjk' && (_explored._length__plain_text > (65 * 3 * 1))):
@@ -1023,7 +1027,7 @@ window.clearlyResults = (function () {
                         return;
                     }
                     if (_tag_name === 'img') {
-                        _explored = (_explored || clearly.getContent__exploreNodeAndGetStuff(_node, true));
+                        _explored = (_explored || clearly.exploreNodeAndGetStuff(_node, true));
                         if (!_explored._is__image_large) {
                             return;
                         }
@@ -1111,7 +1115,7 @@ window.clearlyResults = (function () {
 
                 // add image classes
                 if (_tag_name === 'img') {
-                    _explored = (_explored || clearly.getContent__exploreNodeAndGetStuff(_node, true));
+                    _explored = (_explored || clearly.exploreNodeAndGetStuff(_node, true));
                     switch (true) {
                     case (_explored._is__image_skip):
                         _global__the_html = _global__the_html.substr(0, _pos__start__before);
@@ -1124,7 +1128,7 @@ window.clearlyResults = (function () {
 
                 // large images in links
                 if (_tag_name === 'a') {
-                    _explored = (_explored || clearly.getContent__exploreNodeAndGetStuff(_node, true));
+                    _explored = (_explored || clearly.exploreNodeAndGetStuff(_node, true));
                     switch (true) {
                     case (_explored._count__images_large === 1):
                         _global__the_html = '' + _global__the_html.substr(0, _pos__start__after - 1) + ' class="readableLinkWithLargeImage">' + _global__the_html.substr(_pos__start__after, (_pos__end__before - _pos__start__after)) + '</a>';
@@ -1137,7 +1141,7 @@ window.clearlyResults = (function () {
 
                 // too much content
                 if (clearly.parsingOptions._elements_too_much_content.indexOf('|' + _tag_name + '|') > -1) {
-                    _explored = (_explored || clearly.getContent__exploreNodeAndGetStuff(_node, true));
+                    _explored = (_explored || clearly.exploreNodeAndGetStuff(_node, true));
                     switch (true) {
                     case (_tag_name === 'h1' && (_explored._length__all_text > (65 * 2))):
                     case (_tag_name === 'h2' && (_explored._length__all_text > (65 * 2 * 3))):
@@ -1158,7 +1162,7 @@ window.clearlyResults = (function () {
                     var _contents = _global__the_html.substr(_pos__start__after, (_pos__end__before - _pos__start__after));
                     _contents = _contents.replace(/(<br \/>)/gi, '');
                     _contents = _contents.replace(/(<hr \/>)/gi, '');
-                    var _contentsLength = clearly.measureText__getTextLength(_contents);
+                    var _contentsLength = clearly.getTextLength(_contents);
                     switch (true) {
                     case (_contentsLength === 0 && _tag_name === 'p'):
                         _global__the_html = _global__the_html.substr(0, _pos__start__before) + '<br /><br />';
@@ -1173,9 +1177,9 @@ window.clearlyResults = (function () {
 
                 // too much missing
                 if (clearly.parsingOptions._elements_link_density.indexOf('|' + _tag_name + '|') > -1) {
-                    _explored = (_explored || clearly.getContent__exploreNodeAndGetStuff(_node, true));
+                    _explored = (_explored || clearly.exploreNodeAndGetStuff(_node, true));
                     var _contents = _global__the_html.substr(_pos__start__after, (_pos__end__before - _pos__start__after)).replace(/(<([^>]+)>)/gi, ''),
-                        _contentsLength = clearly.measureText__getTextLength(_contents),
+                        _contentsLength = clearly.getTextLength(_contents),
                         _initialLength = 0 + _explored._length__all_text + (_explored._count__images_small * 10) + (_explored._count__images_skip * 10) + (_node.getElementsByTagName('iframe').length * 10) + (_node.getElementsByTagName('object').length * 10) + (_node.getElementsByTagName('embed').length * 10) + (_node.getElementsByTagName('button').length * 10) + (_node.getElementsByTagName('input').length * 10) + (_node.getElementsByTagName('select').length * 10) + (_node.getElementsByTagName('textarea').length * 10);
                     // too much missing
                     switch (true) {
@@ -1204,9 +1208,9 @@ window.clearlyResults = (function () {
         };
 
         // Find page title, h{1,2,3} within the body is preferred, if not found, document.title is used
-        clearly.getContent__find = function () {
+        clearly.find = function () {
             // get content
-            var _found = clearly.getContent__findInPage(clearly.window),
+            var _found = clearly.findInPage(clearly.window),
                 _targetNode = _found._targetCandidate.__node,
                 _$targetNode = $(_targetNode);
 
@@ -1230,12 +1234,12 @@ window.clearlyResults = (function () {
                         _prevNode = _prevNode.previousSibling;
 
                         // get html
-                        var _h = clearly.getContent__buildHTMLForNode(_prevNode, 'above-the-target');
+                        var _h = clearly.buildHTMLForNode(_prevNode, 'above-the-target');
                         _prevHTML = _h + _prevHTML;
                         _foundHTML = _h + _foundHTML;
 
                         // finished?
-                        if (clearly.measureText__getTextLength(_prevHTML.replace(/<[^>]+?>/gi, '')) > (65 * 3 * 3)) {
+                        if (clearly.getTextLength(_prevHTML.replace(/<[^>]+?>/gi, '')) > (65 * 3 * 3)) {
                             return;
                         }
 
@@ -1244,7 +1248,7 @@ window.clearlyResults = (function () {
                         _headingStartPos = (_headingStartPos > -1 ? _headingStartPos : _foundHTML.indexOf('<h2'));
                         _headingStartPos = (_headingStartPos > -1 ? _headingStartPos : _foundHTML.indexOf('<h3'));
                         if (_headingStartPos > -1) {
-                            var _toHeadingLength = clearly.measureText__getTextLength(_foundHTML.substr(0, _headingStartPos).replace(/<[^>]+?>/gi, ''));
+                            var _toHeadingLength = clearly.getTextLength(_foundHTML.substr(0, _headingStartPos).replace(/<[^>]+?>/gi, ''));
                             if (_toHeadingLength < (65 * 3 * 2)) {
                                 clearly.log('use title found in page');
                                 _foundTitle = true;
@@ -1299,15 +1303,15 @@ window.clearlyResults = (function () {
         };
 
         // Find the most promising candidate that acts as the main container, then build HTML
-        clearly.getContent__findInPage = function (_pageWindow) {
+        clearly.findInPage = function (_pageWindow) {
             var _firstCandidate = false,
                 _secondCandidate = false,
                 _targetCandidate = false;
 
-            var _stuff = clearly.getContent__exploreNodeAndGetStuff(_pageWindow.document.body);
+            var _stuff = clearly.exploreNodeAndGetStuff(_pageWindow.document.body);
 
-            clearly.log('getContent__processCandidates: 1st round');
-            var _processedCandidates = clearly.getContent__processCandidates(_stuff._candidates);
+            clearly.log('processCandidates: 1st round');
+            var _processedCandidates = clearly.processCandidates(_stuff._candidates);
 
             _firstCandidate = _processedCandidates[0];
             _targetCandidate = _firstCandidate;
@@ -1321,8 +1325,8 @@ window.clearlyResults = (function () {
                 break;
             default:
 
-                clearly.log('getContent__processCandidates: 2nd round');
-                var _processedCandidatesSecond = clearly.getContent__processCandidatesSecond(_processedCandidates);
+                clearly.log('processCandidates: 2nd round');
+                var _processedCandidatesSecond = clearly.processCandidatesSecond(_processedCandidates);
                 _secondCandidate = _processedCandidatesSecond[0];
 
                 // they're the same
@@ -1331,10 +1335,10 @@ window.clearlyResults = (function () {
                 }
 
                 // compute again
-                clearly.log('getContent__processCandidates: 3rd round');
-                _firstCandidate['__points_history_final'] = clearly.getContent__computePointsForCandidateThird(_firstCandidate, _firstCandidate);
+                clearly.log('processCandidates: 3rd round');
+                _firstCandidate['__points_history_final'] = clearly.computePointsForCandidateThird(_firstCandidate, _firstCandidate);
                 _firstCandidate['__points_final'] = _firstCandidate.__points_history_final[0];
-                _secondCandidate['__points_history_final'] = clearly.getContent__computePointsForCandidateThird(_secondCandidate, _firstCandidate);
+                _secondCandidate['__points_history_final'] = clearly.computePointsForCandidateThird(_secondCandidate, _firstCandidate);
                 _secondCandidate['__points_final'] = _secondCandidate.__points_history_final[0];
 
                 // are we selecting _second?
@@ -1352,7 +1356,7 @@ window.clearlyResults = (function () {
             clearly.log(_targetCandidate.__node);
 
             // get html
-            var _html = clearly.getContent__buildHTMLForNode(_targetCandidate.__node, 'the-target');
+            var _html = clearly.buildHTMLForNode(_targetCandidate.__node, 'the-target');
 
             // @TODO handle illegal self-closing elements such as <br> <hr>
             _html = _html.substr((_html.indexOf('>') + 1), _html.lastIndexOf('<'));
