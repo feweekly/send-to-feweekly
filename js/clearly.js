@@ -1,5 +1,6 @@
 /*jshint camelcase:false */
-window.clearlyResults = (function () {
+// TODO 命名空间冲突防止
+window.getClearlyResults = function () {
     window.clearly = {};
     window.clearly.debug = true;
     window.clearly.window = window;
@@ -1380,4 +1381,4 @@ window.clearlyResults = (function () {
         return clearly.getContent();
 
     })(window.clearly);
-})();
+};

@@ -370,9 +370,10 @@ if (window.THE_FEWKLY_BM) {
             THE_FEWKLY_BM.init();
         }
 
+        window.THE_FEWKLY_BM.save();
         window.THE_FEWKLY_BM.sendMessage({
             action: "clearly",
-            results: window.clearlyResults
+            results: window.getClearlyResults()
         }, function () {});
     }, 1);
 }
