@@ -83,6 +83,7 @@ if (window.THE_FEWKLY_BM) {
                 width: 225px;\
                 height: 75px;\
                 float: left;\
+                border: 0; \
                 background: url(' + logoSrc + ') left center no-repeat;\
             }\
             #FEWKLY_BM_OVERLAY_WRAPPER\
