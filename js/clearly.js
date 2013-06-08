@@ -1,6 +1,6 @@
 /*jshint camelcase:false */
 // TODO 命名空间冲突防止
-window.getClearlyResults = function () {
+window.__getFeweeklyClearlyResults = function () {
     window.clearly = {};
     window.clearly.debug = true;
     window.clearly.window = window;
