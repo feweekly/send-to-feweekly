@@ -109,9 +109,13 @@ $(function () {
             tabId = (sender && sender.tab && sender.tab.id ? sender.tab.id : null);
             title = request.title;
             url = request.url;
-            html = request.data;
+            html = request.data.html;
 
-            feweekly.add({title: title, url: url, html: html}, {
+            var images = request.data.images || [],
+                links = request.data.links || [],
+                videos = request.data.videos || [];
+
+            feweekly.add({title: title, url: url, html: html, images:images, links:links}, {
                 success: function () {
                     if (request.showSavedToolbarIcon && request.showSavedToolbarIcon === true) {
                         showSavedToolbarIcon(tabId);
@@ -137,7 +141,7 @@ $(function () {
                 }
             });
 
-            return false;
+            return true;
 
         } else if (request.action === 'openTab') {
             util.openTabWithURL(request.url);
@@ -145,14 +149,12 @@ $(function () {
             return false;
 
         } else if (request.action === 'addURL') {
-            url   = request.url;
-
-            if (!util.isValidURL(url)) {
+            if (!util.isValidURL(request.url)) {
                 showInvalidURLNotification(sender.tab);
                 return false;
             }
 
-            loadNotificationUIIntoPage(sender.tab, url, function () {
+            loadNotificationUIIntoPage(sender.tab, request.url, function () {
                 console.log('feweekly.addUrl.loadNotificationUIIntoPage');
             });
         }
@@ -179,6 +181,7 @@ $(function () {
         }
 
         loadNotificationUIIntoPage(tab, url, function () {
+            console.log('feweekly.sendPage.handleSaveToFeweekly');
         });
     }
 

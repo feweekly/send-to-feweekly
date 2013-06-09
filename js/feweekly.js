@@ -32,9 +32,9 @@ var feweekly = (function () {
             url: data.url,
             title: data.title,
             content: data.html,
-            links: data.links || '',
-            images: data.images || '',
-            videos: data.videos || ''
+            'links[]': data.links || '',
+            'images[]': data.images || '',
+            'videos[]': data.videos || ''
         };
 
         if (options.referer) {
