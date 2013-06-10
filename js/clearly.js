@@ -1131,15 +1131,18 @@ window.__getFeweeklyClearlyResults = function () {
                 // add image classes
                 if (_tag_name === 'img') {
                     _explored = (_explored || clearly.exploreNodeAndGetStuff(_node, true));
+                    _$node = $(_node);
                     switch (true) {
                     case (_explored._is__image_skip):
                         _global__the_html = _global__the_html.substr(0, _pos__start__before);
                         return;
                     case (_explored._is__image_large):
-                        _$node = $(_node);
                         clearly.images.push({src: clearly.getAbsoluteUrl(_node.src), width: _$node.width(), height: _$node.height()});
                         _global__the_html = '' + _global__the_html.substr(0, _pos__start__before) + '<div class="readableLargeImageContainer' + (($(_node).width() <= 250) && ($(_node).height() >= 250) ? ' float' : '') + '">' + _global__the_html.substr(_pos__start__before, (_pos__end__after - _pos__start__before)) + '</div>';
                         return;
+                    case (_explored._is__image_medium):
+                        clearly.images.push({src: clearly.getAbsoluteUrl(_node.src), width: _$node.width(), height: _$node.height()});
+                        break;
                     }
                 }
 
