@@ -314,7 +314,9 @@ if (window.THE_FEWKLY_BM) {
 
         sendMessage: function (message, cb) {
             if (this.isChrome()) {
-                if (window.chrome.extension.sendMessage) {
+                if (window.chrome.runtime.sendMessage) {
+                    window.chrome.runtime.sendMessage(message, cb);
+                } else if (window.chrome.extension.sendMessage) {
                     window.chrome.extension.sendMessage(message, cb);
                 } else {
                     window.chrome.extension.sendRequest(message, cb);
@@ -370,9 +372,8 @@ if (window.THE_FEWKLY_BM) {
 
         window.THE_FEWKLY_BM.save();
         window.THE_FEWKLY_BM.sendMessage({
-            action: "ready",
-            url: this.urlToSave || window.location.toString()
+            action: "clearly",
+            results: window.getClearlyResults()
         }, function () {});
     }, 1);
-
 }
