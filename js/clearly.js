@@ -1,6 +1,5 @@
 /*jshint camelcase:false */
-// TODO 命名空间冲突防止
-window.getClearlyResults = function () {
+window.__getFeweeklyClearlyResults = function () {
     window.clearly = {};
     window.clearly.debug = true;
     window.clearly.window = window;
@@ -74,6 +73,10 @@ window.getClearlyResults = function () {
             'tvix.cn', 'uume.com', 'vkuoo.com', 'vottie.com', 'woaide.com',
             'xmyan.com', 'yoqoo.com', 'youku.com', 'zaguo.com'
         ];
+
+        clearly.links = [];
+        clearly.images = [];
+        clearly.videos = [];
 
         // measure text
         // asian languages
@@ -165,6 +168,20 @@ window.getClearlyResults = function () {
             // in case we stop
             clearly.log('Language: ' + clearly.language);
         };
+
+        // get absolute url for image and links
+        // http://james.padolsey.com/javascript/getting-a-fully-qualified-url/
+        clearly.getAbsoluteUrl = function (url) {
+            var anchor = document.createElement('a');
+            anchor.href = url;
+            url = anchor.href;
+            anchor.href = null;
+            return url;
+        };
+
+        // _return__links.push({href: clearly.getAbsoluteUrl(_href), text: _node.textContent});
+        // _return__images.push({type: 'large', src: clearly.getAbsoluteUrl(_node.src), width: _width, height: _height});
+        // _return__images.push({type: 'medium', src: clearly.getAbsoluteUrl(_node.src), width: _width, height: _height});
 
         // Decide tagName of a node, we just need #text, a, img nodes
         clearly.getContent_detectNodeTagName = function (_node) {
@@ -329,7 +346,6 @@ window.getClearlyResults = function () {
                     }
 
                     // done
-                    _return__links.push(_result);
                     break;
 
                     // image node
@@ -352,12 +368,10 @@ window.getClearlyResults = function () {
                     case ((_width * _height) >= 50000):
                     case ((_width >= 350) && _height >= 75):
                         _result._is__image_large = true;
-                        _return__images.push(_result);
                         break;
                     case ((_width * _height) >= 20000):
                     case ((_width >= 150) && (_height >= 150)):
                         _result._is__image_medium = true;
-                        _return__images.push(_result);
                         break;
                     case ((_width <= 5) && (_height <= 5)):
                         _result._is__image_skip = true;
@@ -1122,6 +1136,8 @@ window.getClearlyResults = function () {
                         _global__the_html = _global__the_html.substr(0, _pos__start__before);
                         return;
                     case (_explored._is__image_large):
+                        _$node = $(_node);
+                        clearly.images.push({src: clearly.getAbsoluteUrl(_node.src), width: _$node.width(), height: _$node.height()});
                         _global__the_html = '' + _global__the_html.substr(0, _pos__start__before) + '<div class="readableLargeImageContainer' + (($(_node).width() <= 250) && ($(_node).height() >= 250) ? ' float' : '') + '">' + _global__the_html.substr(_pos__start__before, (_pos__end__after - _pos__start__before)) + '</div>';
                         return;
                     }
@@ -1130,6 +1146,8 @@ window.getClearlyResults = function () {
                 // large images in links
                 if (_tag_name === 'a') {
                     _explored = (_explored || clearly.exploreNodeAndGetStuff(_node, true));
+                    _$node = $(_node);
+                    clearly.links.push({href: clearly.getAbsoluteUrl(_node.href), text: _$node.text()});
                     switch (true) {
                     case (_explored._count__images_large === 1):
                         _global__the_html = '' + _global__the_html.substr(0, _pos__start__after - 1) + ' class="readableLinkWithLargeImage">' + _global__the_html.substr(_pos__start__after, (_pos__end__before - _pos__start__after)) + '</a>';
@@ -1300,7 +1318,11 @@ window.getClearlyResults = function () {
             }
 
             // return
-            return _foundHTML;
+            return {
+                html: _foundHTML,
+                links: clearly.links,
+                images: clearly.images
+            };
         };
 
         // Find the most promising candidate that acts as the main container, then build HTML
@@ -1372,6 +1394,7 @@ window.getClearlyResults = function () {
             return {
                 '_html': _html,
                 '_links': _stuff._links,
+                '_images': _stuff._images,
                 '_targetCandidate': _targetCandidate,
                 '_firstCandidate': _firstCandidate
             };

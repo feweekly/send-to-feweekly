@@ -83,6 +83,7 @@ if (window.THE_FEWKLY_BM) {
                 width: 225px;\
                 height: 75px;\
                 float: left;\
+                border: 0; \
                 background: url(' + logoSrc + ') left center no-repeat;\
             }\
             #FEWKLY_BM_OVERLAY_WRAPPER\
@@ -370,10 +371,14 @@ if (window.THE_FEWKLY_BM) {
             THE_FEWKLY_BM.init();
         }
 
+        // TODO 计算页面的图片和链接
         window.THE_FEWKLY_BM.save();
         window.THE_FEWKLY_BM.sendMessage({
-            action: "clearly",
-            results: window.getClearlyResults()
+            action: "sendPage",
+            showSavedToolbarIcon: true,
+            title: document.title,
+            url: window.location.toString(),
+            data: window.__getFeweeklyClearlyResults()
         }, function () {});
     }, 1);
 }

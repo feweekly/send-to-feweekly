@@ -26,23 +26,27 @@ var feweekly = (function () {
      * @param {String} url
      * @param {Object} options
      */
-    function add(title, url, options) {
-        var data = {
+    function add(data, options) {
+        var postData = {
             email: util.getSetting('email'),
-            url: url,
-            title: title
+            url: data.url,
+            title: data.title,
+            content: data.html,
+            'links[]': data.links || '',
+            'images[]': data.images || '',
+            'videos[]': data.videos || ''
         };
 
         if (options.referer) {
-            data.referer = options.referer;
+            postData.referer = options.referer;
         }
 
-        feweekly.log('add', JSON.stringify(data));
+        feweekly.log('add', JSON.stringify(postData));
 
         $.ajax({
             url: feweekly.getDomain() + controbuteAPI,
             type: 'POST',
-            data: data,
+            data: postData,
             dataType: 'json',
             success: function (response) {
                 feweekly.log('add.complete', JSON.stringify(response));
