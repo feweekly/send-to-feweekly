@@ -115,7 +115,7 @@ $(function () {
                 links = request.data.links || [],
                 videos = request.data.videos || [];
 
-            feweekly.add({title: title, url: url, html: html, images:images, links:links}, {
+            feweekly.add({title: title, url: url, html: html, images: images, links: links}, {
                 success: function () {
                     if (request.showSavedToolbarIcon && request.showSavedToolbarIcon === true) {
                         showSavedToolbarIcon(tabId);
@@ -350,7 +350,7 @@ $(function () {
         }
 
         util.setSetting('lastInstalledVersion', VERSION);
-        util.setSetting('debug', true);
+        util.setSetting('debug', false);
 
     }());
 });
