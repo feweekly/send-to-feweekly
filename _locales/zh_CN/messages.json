@@ -1,26 +1,26 @@
 {
     "extensionName": {
-        "message": "发送到Feweekly"
+        "message": "\u53d1\u9001\u5230feweekly"
     },
     "extensionDescription": {
-        "message": "与其他前端工程师分享你喜欢的文章、教程、工具、代码库的最简单工具"
+        "message": "\u4e0e\u5176\u4ed6\u524d\u7aef\u5de5\u7a0b\u5e08\u5206\u4eab\u4f60\u559c\u6b22\u7684\u6587\u7ae0\u3001\u6559\u7a0b\u3001\u5de5\u5177\u3001\u4ee3\u7801\u5e93\u7684\u6700\u7b80\u5355\u5de5\u5177"
     },
     "browserAction": {
-        "message": "发送到Feweekly"
+        "message": "\u53d1\u9001\u5230feweekly"
     },
     "contextMenu": {
-        "message": "发送到Feweekly"
+        "message": "\u53d1\u9001\u5230feweekly"
     },
     "errorOffline": {
-        "message": "哎呀，你的网络貌似有问题"
+        "message": "\u54ce\u5440\uff0c\u4f60\u7684\u7f51\u7edc\u8c8c\u4f3c\u6709\u95ee\u9898"
     },
     "errorInvalid": {
-        "message": "抱歉，你要保存的网址不合格"
+        "message": "\u62b1\u6b49\uff0c\u4f60\u8981\u4fdd\u5b58\u7684\u7f51\u5740\u4e0d\u5408\u683c"
     },
     "infoSaving": {
-        "message": "请稍后，正在保存..."
+        "message": "\u8bf7\u7a0d\u540e\uff0c\u6b63\u5728\u4fdd\u5b58..."
     },
     "infoSaved": {
-        "message": "页面已保存！"
+        "message": "\u9875\u9762\u5df2\u4fdd\u5b58\uff01"
     }
 }
