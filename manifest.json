@@ -17,7 +17,7 @@
             "19": "img/browser-action-icon-19.png",
             "38": "img/browser-action-icon-38.png"
         },
-        "default_title": "Send to Feweekly"
+        "default_title": "__MSG_extensionName__"
     },
     "content_scripts": [ {
         "js": [ "js/keyboard-shortcut.js" ],

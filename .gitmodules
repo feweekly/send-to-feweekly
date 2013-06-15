@@ -1,0 +1,3 @@
+[submodule "js/html2markdown"]
+	path = js/html2markdown
+	url = git@github.com:feweekly/html2markdown.git

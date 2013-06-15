@@ -31,7 +31,7 @@ var feweekly = (function () {
             email: util.getSetting('email'),
             url: data.url,
             title: data.title,
-            content: data.html,
+            content: data.markdown || data.html,
             links: JSON.stringify(data.links || []),
             images: JSON.stringify(data.images || []),
             videos: JSON.stringify(data.videos || [])

@@ -23,7 +23,13 @@ $(function () {
         if (url) {
             util.executeScriptInTab(tab, 'window.___FEWKLY__URL_TO_SAVE = "' + url + '"');
         }
-        util.executeMultiScriptFromURLInTab(tab, ['js/zepto.min.js', 'js/clearly.js', 'js/notify.js'], callback);
+        util.executeMultiScriptFromURLInTab(tab, [
+            'js/html2markdown/htmldomparser.js',
+            'js/html2markdown/html2markdown.js',
+            'js/zepto.min.js',
+            'js/clearly.js',
+            'js/notify.js'
+        ], callback);
     }
 
     function showSavedToolbarIcon(tabId) {
@@ -87,7 +93,7 @@ $(function () {
 
     // Listener for messages
     util.addMessageListener(function messageListenerCallback(request, sender, sendResponse) {
-        var tabId, url, title, html;
+        var tabId, url, title, html, markdown;
 
         if (request.action === 'getSetting') {
             sendResponse({'value': util.getSetting(request.key)});
@@ -110,12 +116,13 @@ $(function () {
             title = request.title;
             url = request.url;
             html = request.data.html;
+            markdown = request.data.markdown;
 
             var images = request.data.images || [],
                 links = request.data.links || [],
                 videos = request.data.videos || [];
 
-            feweekly.add({title: title, url: url, html: html, images: images, links: links}, {
+            feweekly.add({title: title, url: url, html: html, markdown: markdown, images: images, links: links}, {
                 success: function () {
                     if (request.showSavedToolbarIcon && request.showSavedToolbarIcon === true) {
                         showSavedToolbarIcon(tabId);
@@ -340,14 +347,14 @@ $(function () {
         }
 
         // Check for first time installation
-        if (util.getSetting('installed') !== 'true') {
-            util.setSetting('installed', 'true');
-            util.openTabWithURL(feweekly.getDomain() + '/pages/display/installed');
+        // if (util.getSetting('installed') !== 'true') {
+        //     util.setSetting('installed', 'true');
+        //     util.openTabWithURL(feweekly.getDomain() + '/pages/display/installed');
         // Show upgrade message
-        } else if (SHOW_RELEASE_NOTES && util.getSetting('installed') === 'true' && (!util.getSetting('lastInstalledVersion') || util.getSetting('lastInstalledVersion') !== VERSION)) {
-            var browser = util.isChrome() ? 'chrome' : 'safari';
-            util.openTabWithURL(feweekly.getDomain() + '/pages/display/updated?browser=' + browser + 'newversion=' + VERSION + '&oldversion=' + util.getSetting('lastInstalledVersion'));
-        }
+        // } else if (SHOW_RELEASE_NOTES && util.getSetting('installed') === 'true' && (!util.getSetting('lastInstalledVersion') || util.getSetting('lastInstalledVersion') !== VERSION)) {
+        //     var browser = util.isChrome() ? 'chrome' : 'safari';
+        //     util.openTabWithURL(feweekly.getDomain() + '/pages/display/updated?browser=' + browser + 'newversion=' + VERSION + '&oldversion=' + util.getSetting('lastInstalledVersion'));
+        // }
 
         util.setSetting('lastInstalledVersion', VERSION);
         util.setSetting('debug', false);

@@ -1323,6 +1323,7 @@ window.__getFeweeklyClearlyResults = function () {
             // return
             return {
                 html: _foundHTML,
+                markdown: HTML2Markdown(_foundHTML),
                 links: clearly.links,
                 images: clearly.images
             };

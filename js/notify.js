@@ -371,7 +371,6 @@ if (window.THE_FEWKLY_BM) {
             THE_FEWKLY_BM.init();
         }
 
-        // TODO 计算页面的图片和链接
         window.THE_FEWKLY_BM.save();
         window.THE_FEWKLY_BM.sendMessage({
             action: "sendPage",
