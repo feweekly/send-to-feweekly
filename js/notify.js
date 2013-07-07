@@ -1,27 +1,25 @@
-if (window.THE_FEWKLY_BM) {
-    window.THE_FEWKLY_BM.save();
-} else {
-    var FEWKLY_D = 'www.feweekly.com';
+(function () {
+    var FEWEEKLY_DOMAIN = 'www.feweekly.com',
+        FeweeklyMessenger,
+        FeweeklyOverlay;
 
     /**
-     * FEWKLY_BM_OVERLAY is the view itself and contains all of the methods to manipute the overlay and messaging.
+     * FeweeklyOverlay is the view itself and contains all of the methods to manipute the overlay and messaging.
      * It does not contain any logic for saving or communication with the extension or server.
      */
-    var FEWKLY_BM_OVERLAY = function () {
-        this.inited = false;
-    };
+    FeweeklyOverlay = function () { };
 
-    FEWKLY_BM_OVERLAY.prototype = {
+    FeweeklyOverlay.prototype = {
         create: function () {
             // remove any existing elements
-            var existingStyle = document.getElementById('FEWKLY_BM_STYLE');
-            if (existingStyle) {
-                existingStyle.parentNode.removeChild(existingStyle);
+            var ndStyleSheet = document.getElementById('j-feweekly-style');
+            if (ndStyleSheet) {
+                ndStyleSheet.parentNode.removeChild(ndStyleSheet);
             }
 
-            var existingOverlay = document.getElementById('FEWKLY_BM_OVERLAY');
-            if (existingOverlay) {
-                existingOverlay.parentNode.removeChild(existingOverlay);
+            var ndOverlay = document.getElementById('j-feweekly-overlay');
+            if (ndOverlay) {
+                ndOverlay.parentNode.removeChild(ndOverlay);
             }
 
             // figure out how much we need to scale the overlay to match the user's zoom level
@@ -47,7 +45,7 @@ if (window.THE_FEWKLY_BM) {
 
             // TODO refactor css here
             var styles = '\
-            #FEWKLY_BM_OVERLAY\
+            #j-feweekly-overlay\
             {\
                 visibility:hidden;\
                 position:fixed;\
@@ -77,7 +75,7 @@ if (window.THE_FEWKLY_BM) {
                 -webkit-backface-visibility: hidden;\
                 -webkit-perspective: 1000;\
             }\
-            #FEWKLY_BM_OVERLAY_LOGO\
+            #j-feweekly-overlay-logo\
             {\
                 display: block;\
                 width: 225px;\
@@ -86,13 +84,13 @@ if (window.THE_FEWKLY_BM) {
                 border: 0; \
                 background: url(' + logoSrc + ') left center no-repeat;\
             }\
-            #FEWKLY_BM_OVERLAY_WRAPPER\
+            #j-feweekly-overlay-wrapper\
             {\
                 padding-left:7%;\
                 padding-right: 7%;\
                 height: 100%;\
             }\
-            #FEWKLY_BM_OVERLAY_LABEL\
+            #j-feweekly-overlay-label\
             {\
                 text-indent:80px;\
                 font-weight:bold;\
@@ -101,17 +99,17 @@ if (window.THE_FEWKLY_BM) {
 
             // add overlay
             var overlay = '\
-            <div id="FEWKLY_BM_OVERLAY">\
-                <div id="FEWKLY_BM_OVERLAY_WRAPPER">\
-                    <a id="FEWKLY_BM_OVERLAY_LOGO" href="http://' + FEWKLY_D + '" target="_blank"></a>\
-                    <div id="FEWKLY_BM_OVERLAY_LABEL"></div>\
+            <div id="j-feweekly-overlay">\
+                <div id="j-feweekly-overlay-wrapper">\
+                    <a id="j-feweekly-overlay-logo" href="http://' + FEWEEKLY_DOMAIN + '" target="_blank"></a>\
+                    <div id="j-feweekly-overlay-label"></div>\
                 </div>\
             </div>\
             ';
 
             // add to DOM
             var overlayFakeContainer = document.createElement('div');
-            overlayFakeContainer.innerHTML = '<style id="FEWKLY_BM_STYLE">' + styles + '</style>' + overlay;
+            overlayFakeContainer.innerHTML = '<style id="j-feweekly-style">' + styles + '</style>' + overlay;
 
             var bodys = document.getElementsByTagName('body');
             var body = bodys ? bodys[0] : false;
@@ -131,20 +129,20 @@ if (window.THE_FEWKLY_BM) {
         },
 
         displayMessage: function (msg) {
-            document.getElementById('FEWKLY_BM_OVERLAY_LABEL').innerHTML = msg;
+            document.getElementById('j-feweekly-overlay-label').innerHTML = msg;
         },
 
         getReadyToHide: function () {
             var self = this;
-            clearTimeout(self.hideTO);
-            self.hideTO = setTimeout(function () {
+            clearTimeout(self.hideTimer);
+            self.hideTimer = setTimeout(function () {
                 self.hide();
             }, this.closeToolbarTime);
         },
 
         cancelPendingHide: function () {
-            clearTimeout(this.hideTO);
-            this.hideTO = undefined;
+            clearTimeout(this.hideTimer);
+            this.hideTimer = undefined;
         },
 
         show: function () {
@@ -152,7 +150,7 @@ if (window.THE_FEWKLY_BM) {
 
             this.cancelPendingHide();
 
-            var overlay = document.getElementById('FEWKLY_BM_OVERLAY');
+            var overlay = document.getElementById('j-feweekly-overlay');
             overlay.style[this.browserPrefix() + 'Transform'] = 'translate3d(0px,' + (0 - overlay.offsetHeight - this.shadowHeight) + 'px,0px)';
             overlay.style.visibility = 'visible';
 
@@ -203,7 +201,7 @@ if (window.THE_FEWKLY_BM) {
 
             var hideDelay = 0.3;
 
-            var overlay = document.getElementById('FEWKLY_BM_OVERLAY');
+            var overlay = document.getElementById('j-feweekly-overlay');
             var prefix = this.browserPrefix();
             if (this.isSafari) {
                 // We removed the Transition style in the show method now we have
@@ -263,18 +261,17 @@ if (window.THE_FEWKLY_BM) {
 
     };
 
-
     // Layer between Bookmarklet and Extensions
-    var FEWKLY_BM = function () {};
+    FeweeklyMessenger = function () {};
 
-    FEWKLY_BM.prototype = {
+    FeweeklyMessenger.prototype = {
         init: function () {
-            if (this.inited) {
+            if (this.initialized) {
                 return;
             }
 
-            this.overlay = new FEWKLY_BM_OVERLAY();
-            this.inited = true;
+            this.overlay = new FeweeklyOverlay();
+            this.initialized = true;
             this.requestListener = undefined;
         },
 
@@ -346,12 +343,13 @@ if (window.THE_FEWKLY_BM) {
 
             this.overlay.create();
 
-            if (window.___FEWKLY__URL_TO_SAVE) {
-                this.urlToSave = window.___FEWKLY__URL_TO_SAVE;
-                window.___FEWKLY__URL_TO_SAVE = undefined;
+            if (window.__feweeklyUrlToSave) {
+                this.urlToSave = window.__feweeklyUrlToSave;
+                window.__feweeklyUrlToSave = undefined;
             }
 
-            if (window.___FEWKLY__URL_SAVED === this.urlToSave) {
+            // 如果已经保存，只显示保存成功的提示，不发请求
+            if (window.__feweeklyUrlSaved === this.urlToSave) {
                 this.overlay.wasSaved();
             } else {
                 this.overlay.displayMessage(chrome.i18n.getMessage('infoSaving'));
@@ -363,21 +361,25 @@ if (window.THE_FEWKLY_BM) {
 
     };
 
-    // make sure the page has fully loaded before trying anything
-    window.setTimeout(function () {
-        if (!window.THE_FEWKLY_BM) {
-            var THE_FEWKLY_BM = new FEWKLY_BM();
-            window.THE_FEWKLY_BM = THE_FEWKLY_BM;
-            THE_FEWKLY_BM.init();
-        }
+    // 真正的处理逻辑
+    if (window.__feweeklyMessenger) {
+        window.__feweeklyMessenger.save();
+    } else {
+        // make sure the page has fully loaded before trying anything
+        window.setTimeout(function () {
+            if (!window.__feweeklyMessenger) {
+                window.__feweeklyMessenger = new FeweeklyMessenger();
+                window.__feweeklyMessenger.init();
+            }
 
-        window.THE_FEWKLY_BM.save();
-        window.THE_FEWKLY_BM.sendMessage({
-            action: "sendPage",
-            showSavedToolbarIcon: true,
-            title: document.title,
-            url: window.location.toString(),
-            data: window.__getFeweeklyClearlyResults()
-        }, function () {});
-    }, 1);
-}
+            window.__feweeklyMessenger.save();
+            window.__feweeklyMessenger.sendMessage({
+                action: "sendPage",
+                showSavedToolbarIcon: true,
+                title: document.title,
+                url: window.location.toString(),
+                data: window.__getFeweeklyClearlyResults()
+            }, function () {});
+        }, 1);
+    }
+})();

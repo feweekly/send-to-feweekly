@@ -21,7 +21,7 @@ $(function () {
 
     function loadNotificationUIIntoPage(tab, url, callback) {
         if (url) {
-            util.executeScriptInTab(tab, 'window.___FEWKLY__URL_TO_SAVE = "' + url + '"');
+            util.executeScriptInTab(tab, 'window.__feweeklyUrlToSave = "' + url + '"');
         }
         util.executeMultiScriptFromURLInTab(tab, [
             'js/html2markdown/htmldomparser.js',
@@ -122,13 +122,13 @@ $(function () {
                 links = request.data.links || [],
                 videos = request.data.videos || [];
 
-            feweekly.add({title: title, url: url, html: html, markdown: markdown, images: images, links: links}, {
+            feweekly.add({title: title, url: url, html: html, markdown: markdown, images: images, videos: videos, links: links}, {
                 success: function () {
                     if (request.showSavedToolbarIcon && request.showSavedToolbarIcon === true) {
                         showSavedToolbarIcon(tabId);
                     }
 
-                    util.executeScriptInTab(sender.tab, 'window.___FEWKLY__URL_SAVED = "' + url + '"');
+                    util.executeScriptInTab(sender.tab, 'window.__feweeklyUrlSaved = "' + url + '"');
                     util.sendMessageToTab(sender.tab, {status: 'success'});
                     sendResponse({status: 'success'});
                 },
@@ -176,6 +176,7 @@ $(function () {
         feweekly.log('handleSaveToFeweekly', url);
 
         if (!feweekly.isSubscribed()) {
+            feweekly.log('handleSaveToFeweekly', 'user not subscribed');
             authentication.showSubscribeWindow(tab, function () {
                 handleSaveToFeweekly(tab, inUrl);
             });
@@ -183,6 +184,7 @@ $(function () {
         }
 
         if (!util.isValidURL(url)) {
+            feweekly.log('handleSaveToFeweekly', 'url not valid');
             showInvalidURLNotification(tab);
             return;
         }
@@ -357,7 +359,7 @@ $(function () {
         // }
 
         util.setSetting('lastInstalledVersion', VERSION);
-        util.setSetting('debug', false);
+        util.setSetting('debug', true);
 
     }());
 });

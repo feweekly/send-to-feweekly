@@ -1,11 +1,11 @@
 /* globals util */
 var feweekly = (function () {
 
-    var controbuteAPI = '/news_letter/contributions/add',
+    var contributeAPI = '/news_letter/contributions/add',
         subscribeAPI = '/news_letter/subscribes/add',
         domain = 'http://www.feweekly.com',
         domainDebug = 'http://www.dev.feweekly.com',
-        version = '0.0.1',
+        version = '0.0.2',
         showReleaseNotes = true;
 
     function isSubscribed() {
@@ -44,7 +44,7 @@ var feweekly = (function () {
         feweekly.log('add', JSON.stringify(postData));
 
         $.ajax({
-            url: feweekly.getDomain() + controbuteAPI,
+            url: feweekly.getDomain() + contributeAPI,
             type: 'POST',
             data: postData,
             dataType: 'json',
