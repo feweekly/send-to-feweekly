@@ -136,7 +136,7 @@ $(function () {
                     util.sendMessageToTab(sender.tab, {status: 'success'});
                     sendResponse({status: 'success'});
                 },
-                error: function (status, xhr) {
+                error: function (status) {
                     // Inject the error message into the overlay
                     setTimeout(function () {
                         // Check for online status
@@ -145,7 +145,7 @@ $(function () {
                             return;
                         }
 
-                        util.sendMessageToTab(sender.tab, {status: 'error', error: xhr.getResponseHeader('X-Error')});
+                        util.sendMessageToTab(sender.tab, {status: 'error', error: chrome.i18n.getMessage('infoError')});
                     }, 100);
 
                     sendResponse({status: 'error'});
@@ -164,14 +164,14 @@ $(function () {
                     util.sendMessageToTab(sender.tab, {status: 'success'});
                     sendResponse({status: 'success'});
                 },
-                error: function (status, xhr) {
+                error: function (status) {
                     setTimeout(function () {
                         if (!navigator.onLine) {
                             util.sendMessageToTab(sender.tab, {status: 'error', error: chrome.i18n.getMessage('errorOffline')});
                             return;
                         }
 
-                        util.sendMessageToTab(sender.tab, {status: 'error', error: xhr.getResponseHeader('X-Error')});
+                        util.sendMessageToTab(sender.tab, {status: 'error', error: chrome.i18n.getMessage('infoError')});
                     }, 100);
 
                     sendResponse({status: 'error'});
@@ -401,10 +401,10 @@ $(function () {
                         sendResponse({status: 'success'});
 
                     },
-                    error: function (xhr) {
+                    error: function () {
                         sendResponse({
                             status: 'error',
-                            error: xhr.getResponseHeader('X-Error')
+                            error: chrome.i18n.getMessage('infoError'),
                         });
                     }
                 });
