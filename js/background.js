@@ -95,7 +95,7 @@ $(function () {
 
     // Listener for messages
     util.addMessageListener(function messageListenerCallback(request, sender, sendResponse) {
-        var tabId, url, title, html, markdown, description;
+        var tabId, url, title, html, markdown, comment;
 
         if (request.action === 'getSetting') {
             sendResponse({'value': util.getSetting(request.key)});
@@ -154,11 +154,11 @@ $(function () {
             return true;
 
         // 保存摘要
-        } else if (request.action === 'sendDescription') {
+        } else if (request.action === 'sendComment') {
             url = request.url;
-            description = request.data;
+            comment = request.data;
 
-            feweekly.update({url: url, description: description}, {
+            feweekly.update({url: url, comment: comment}, {
                 success: function () {
                     util.sendMessageToTab(sender.tab, {status: 'success'});
                     sendResponse({status: 'success'});

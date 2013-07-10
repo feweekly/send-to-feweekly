@@ -23,17 +23,20 @@
     "infoSaved": {
         "message": "\u9875\u9762\u5df2\u4fdd\u5b58\uff01"
     },
-    "infoDescriptionEmpty": {
+    "infoCommentEmpty": {
         "message": "\u6458\u8981\u4e0d\u80fd\u4e3a\u7a7a"
     },
-    "infoDescriptionSaving": {
+    "infoCommentSaving": {
         "message": "\u6b63\u5728\u4fdd\u5b58\u6458\u8981..."
     },
-    "infoDescriptionSaved": {
+    "infoCommentSaved": {
         "message": "\u6458\u8981\u5df2\u4fdd\u5b58%21"
     },
     "btnComment": {
         "message": "\u8bc4\u8bba"
+    },
+    "btnTag": {
+        "message": "Tag"
     },
     "btnClose": {
         "message": "\u5173\u95ed"

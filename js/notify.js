@@ -1,8 +1,12 @@
 (function () {
     var FEWEEKLY_DOMAIN = 'www.feweekly.com',
+        EDITOR_MODE_NULL = 0,
+        EDITOR_MODE_COMMENT = 1,
+        EDITOR_MODE_TAG = 2,
         FeweeklyMessenger,
         FeweeklyOverlay;
 
+    // execution context
     function bind(func, context) {
         if (func.bind) {
             return func.bind(context);
@@ -17,7 +21,7 @@
      * It does not contain any logic for saving or communication with the extension or server.
      */
     FeweeklyOverlay = function (options) {
-        this.onSaveDescription = options.onSaveDescription;
+        this.onSaveComment = options.onSaveComment;
         this.onSaveTags = options.onSaveTags;
         this.onGetTags = options.onGetTags;
     };
@@ -32,21 +36,24 @@
             this.isSafari = (userAgent.indexOf('Safari') !== -1 && userAgent.indexOf('Chrome') === -1);
 
             this.shadowHeight = 20;
-            this.itemWasSaved = false;
 
             // add overlay
             var overlay = '' +
             '<div id="j-feweekly-overlay">' +
                 '<div id="j-feweekly-overlay-wrapper">' +
-                    '<div id="j-feweekly-overlay-btn-wrapper" style="display:none">' +
-                        '<span id="j-feweekly-overlay-close" class="feweekly-btn feweekly-btn--large"></span>' +
-                        '<span id="j-feweekly-overlay-edit" class="feweekly-btn feweekly-btn--large feweekly-btn--danger"></span>' +
-                        '<span id="j-feweekly-overlay-save" class="feweekly-btn feweekly-btn--large feweekly-btn--success"></span>' +
+                    '<div id="j-feweekly-button-wrapper" style="display:none">' +
+                        '<span id="j-feweekly-button-comment" class="feweekly-btn feweekly-btn--large feweekly-btn--warning"></span>' +
+                        '<span id="j-feweekly-button-tag" class="feweekly-btn feweekly-btn--large feweekly-btn--warning"></span>' +
+                        '<span id="j-feweekly-button-close" class="feweekly-btn feweekly-btn--large"></span>' +
+                        '<span id="j-feweekly-button-save" class="feweekly-btn feweekly-btn--large feweekly-btn--success"></span>' +
                     '</div>' +
                     '<a id="j-feweekly-overlay-logo" href="http://' + FEWEEKLY_DOMAIN + '" target="_blank"></a>' +
                     '<div id="j-feweekly-overlay-message"></div>' +
-                    '<div id="j-feweekly-overlay-input-wrapper" style="display:none">' +
-                        '<textarea id="j-feweekly-overlay-input" name="feweekly-overlay-input"></textarea>' +
+                    '<div id="j-feweekly-comment-wrapper" style="display:none">' +
+                        '<textarea id="j-feweekly-comment-input" name="feweekly-comment-input"></textarea>' +
+                    '</div>' +
+                    '<div id="j-feweekly-tag-wrapper" style="display:none">' +
+                        '<input type="text" id="j-feweekly-tag-input" name="feweekly-tag-input" />' +
                     '</div>' +
                 '</div>' +
             '</div>';
@@ -59,21 +66,29 @@
             setTimeout(function () { self.show(); }, 0);
 
             this.overlayCloseTimeout = 3000;
-            this.mouseIsOverOverlay = false;
+            this.isMouseOnOverlay = false;
+            this.isItemSaved = false;
 
             // element handle
             this.ndOverlay = $('#j-feweekly-overlay');
             this.ndMessage = $('#j-feweekly-overlay-message');
-            this.ndInputWrapper = $('#j-feweekly-overlay-input-wrapper');
-            this.ndInput = $('#j-feweekly-overlay-input');
-            this.ndBtnWrapper = $('#j-feweekly-overlay-btn-wrapper');
-            this.ndBtnClose = $('#j-feweekly-overlay-close');
-            this.ndBtnEdit = $('#j-feweekly-overlay-edit');
-            this.ndBtnSave = $('#j-feweekly-overlay-save');
 
-            this.ndBtnSave.text(chrome.i18n.getMessage('btnSave'));
-            this.ndBtnEdit.text(chrome.i18n.getMessage('btnComment'));
+            this.ndCommentWrapper = $('#j-feweekly-comment-wrapper');
+            this.ndComment = $('#j-feweekly-comment-input');
+
+            this.ndTagWrapper = $('#j-feweekly-tag-wrapper');
+            this.ndTag = $('#j-feweekly-tag-input');
+
+            this.ndBtnWrapper = $('#j-feweekly-button-wrapper');
+            this.ndBtnClose = $('#j-feweekly-button-close');
+            this.ndBtnSave = $('#j-feweekly-button-save');
+            this.ndBtnComment = $('#j-feweekly-button-comment');
+            this.ndBtnTag = $('#j-feweekly-button-tag');
+
             this.ndBtnClose.text(chrome.i18n.getMessage('btnClose'));
+            this.ndBtnSave.text(chrome.i18n.getMessage('btnSave'));
+            this.ndBtnComment.text(chrome.i18n.getMessage('btnComment'));
+            this.ndBtnTag.text(chrome.i18n.getMessage('btnTag'));
         },
 
         displayMessage: function (msg) {
@@ -82,14 +97,14 @@
 
         getReadyToHide: function () {
             var self = this;
-            clearTimeout(self.overlayCloseTimer);
-            self.overlayCloseTimer = setTimeout(function () {
+            window.clearTimeout(self.overlayCloseTimer);
+            self.overlayCloseTimer = window.setTimeout(function () {
                 self.hide();
             }, this.overlayCloseTimeout);
         },
 
         cancelPendingHide: function () {
-            clearTimeout(this.overlayCloseTimer);
+            window.clearTimeout(this.overlayCloseTimer);
             this.overlayCloseTimer = undefined;
         },
 
@@ -110,34 +125,50 @@
             // this.ndOverlay.css('visibility', 'visible');
 
             // Don't hide the notification if the mouse is over the UI
-            this.mouseIsOverOverlay = false;
-            this.isDescriptionInputOpen = false;
+            this.isMouseOnOverlay = false;
+            this.isEditorOpen = false;
+            this.editorMode = EDITOR_MODE_NULL;
 
             this.ndOverlay.on('mouseover', function () {
                 self.cancelPendingHide();
-                self.mouseIsOverOverlay = true;
+                self.isMouseOnOverlay = true;
             });
 
             this.ndOverlay.on('mouseout', function () {
-                if (self.isDescriptionInputOpen) { return; }
-                self.mouseIsOverOverlay = false;
-                if (self.itemWasSaved === false) { return; }
+                if (self.isEditorOpen) { return; }
+                self.isMouseOnOverlay = false;
+                if (self.isItemSaved === false) { return; }
                 self.overlayCloseTimeout = 1500;
                 self.getReadyToHide();
             });
 
             this.ndBtnClose.on('click', function () {
-                self.mouseIsOverOverlay = false;
-                self.isDescriptionInputOpen = false;
+                self.isMouseOnOverlay = false;
+                self.isEditorOpen = false;
                 self.hide();
             });
 
-            this.ndBtnEdit.on('click', function () {
-                self.editDescription();
+            this.ndBtnComment.on('click', function () {
+                console.log('feweekly.notify.comment');
+                self.editorMode = EDITOR_MODE_COMMENT;
+                self.openEditor();
+            });
+
+            this.ndBtnTag.on('click', function () {
+                console.log('feweekly.notify.tag');
+                self.editorMode = EDITOR_MODE_TAG;
+                self.openEditor();
             });
 
             this.ndBtnSave.on('click', function () {
-                self.onSaveDescription(self.trim(self.ndInput.val()));
+                switch (self.editorMode) {
+                case EDITOR_MODE_COMMENT:
+                    self.onSaveComment(self.trim(self.ndComment.val()));
+                    break;
+                case EDITOR_MODE_TAG:
+                    self.onSaveTags(self.trim(self.ndTag.val()));
+                    break;
+                }
             });
 
             setTimeout(function () {
@@ -166,8 +197,8 @@
         },
 
         hide: function () {
-            if (this.mouseIsOverOverlay) return;
-            if (this.isDescriptionInputOpen) return;
+            if (this.isMouseOnOverlay) return;
+            if (this.isEditorOpen) return;
 
             var hideDelay = 0.3,
                 self = this,
@@ -193,37 +224,71 @@
         wasSaved: function () {
             var self = this;
             setTimeout(function () {
-                self.itemWasSaved = true;
+                self.isItemSaved = true;
                 self.displayMessage(chrome.i18n.getMessage('infoSaved'));
-                self.showInputButtons();
+                self.showEditorButtons();
             }, 30);
         },
 
-        showInputButtons: function () {
+        showEditorButtons: function () {
             var self = this;
             setTimeout(function () {
                 self.ndBtnSave.hide();
+                self.ndBtnClose.hide();
                 self.ndBtnWrapper.show();
                 self.getReadyToHide();
             }, 30);
         },
 
-        editDescription: function () {
-            this.isDescriptionInputOpen = true;
+        openEditor: function () {
+            this.isEditorOpen = true;
+
             this.ndMessage.hide();
-            this.ndBtnEdit.hide();
+
+            this.ndBtnClose.show();
             this.ndBtnSave.show();
-            this.ndInputWrapper.show();
-            this.ndInput.focus();
+
+            this.ndBtnComment.hide();
+            this.ndBtnTag.hide();
+
+            switch (this.editorMode) {
+            case EDITOR_MODE_COMMENT:
+                this.ndCommentWrapper.show();
+                this.ndTagWrapper.hide();
+                this.ndComment.focus();
+                break;
+            case EDITOR_MODE_TAG:
+                this.ndCommentWrapper.hide();
+                this.ndTagWrapper.show();
+                this.ndTag.focus();
+                break;
+            }
         },
 
-        discardDescription: function (saved) {
-            this.isDescriptionInputOpen = false;
-            this.ndInputWrapper.hide();
+        closeEditor: function (editorContentSaved) {
+            this.isEditorOpen = false;
+
             this.ndMessage.show();
+            this.ndCommentWrapper.hide();
+            this.ndTagWrapper.hide();
+
             this.ndBtnSave.hide();
-            if (!saved) {
-                this.ndBtnEdit.show();
+
+            // 如果保存成功，退出编辑模式
+            // 否则需要显示按钮
+            if (editorContentSaved) {
+                this.editorMode = EDITOR_MODE_NULL;
+            } else {
+                switch (this.editorMode) {
+                case EDITOR_MODE_COMMENT:
+                    this.ndBtnComment.show();
+                    this.ndBtnTag.hide();
+                    break;
+                case EDITOR_MODE_TAG:
+                    this.ndBtnComment.hide();
+                    this.ndBtnTag.show();
+                    break;
+                }
             }
         },
 
@@ -267,7 +332,7 @@
             }
 
             this.overlay = new FeweeklyOverlay({
-                onSaveDescription: bind(this.saveDescription, this),
+                onSaveComment: bind(this.saveComment, this),
                 onSaveTags: bind(this.saveTags, this),
                 onGetTags: bind(this.getTags, this),
             });
@@ -367,31 +432,31 @@
             }
         },
 
-        saveDescription: function (description) {
+        saveComment: function (comment) {
             var self = this;
 
-            if (!description) {
-                this.overlay.discardDescription();
-                this.overlay.displayMessage(chrome.i18n.getMessage('infoDescriptionEmpty'));
+            if (!comment) {
+                this.overlay.closeEditor();
+                this.overlay.displayMessage(chrome.i18n.getMessage('infoCommentEmpty'));
             } else {
                 this.addMessageListener(function (response) {
-                    self.handleDescriptionResponse(response);
+                    self.handleCommentResponse(response);
                 });
                 this.sendMessage({
-                    action: "sendDescription",
+                    action: "sendComment",
                     url: window.location.toString(),
-                    data: description
+                    data: comment
                 }, function () {});
             }
         },
 
-        handleDescriptionResponse: function (response) {
-            this.overlay.discardDescription(true);
+        handleCommentResponse: function (response) {
+            this.overlay.closeEditor(true);
             this.overlay.getReadyToHide();
             if (response.status === "success") {
-                this.overlay.displayMessage(chrome.i18n.getMessage('infoDescriptionSaved'));
+                this.overlay.displayMessage(chrome.i18n.getMessage('infoCommentSaved'));
             } else if (response.status === "error") {
-                this.overlay.displayMessage(chrome.i18n.getMessage('infoDescriptionError'));
+                this.overlay.displayMessage(chrome.i18n.getMessage('infoCommentError'));
             }
         },
 

@@ -22,7 +22,7 @@ var feweekly = (function () {
     }
 
     /**
-     * Add description for a link
+     * Add comment for a link
      * @param {String} url
      * @param {Object} options
      */
@@ -30,7 +30,7 @@ var feweekly = (function () {
         var postData = {
             url: data.url,
             email: util.getSetting('email'),
-            description: data.description
+            comment: data.comment
         };
 
         feweekly.log('update', JSON.stringify(postData));

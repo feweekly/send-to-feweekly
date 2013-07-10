@@ -44,12 +44,14 @@
 }
 
 #j-feweekly-overlay-message,
-#j-feweekly-overlay-input-wrapper {
+#j-feweekly-comment-wrapper,
+#j-feweekly-tag-wrapper {
     text-indent:80px;
     font-weight:bold;
 }
 
-#j-feweekly-overlay-input {
+#j-feweekly-comment-input,
+#j-feweekly-tag-input {
     display: inline-block;
     padding: 4px 6px;
     font-size: 14px;
@@ -63,19 +65,20 @@
     box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.075);
     -webkit-transition:border linear 0.2s, box-shadow linear 0.2s;
     transition:border linear 0.2s, box-shadow linear 0.2s;
-    height:40px;
+    height:50px;
     margin:14px 0;
     width:50%;
 }
 
-#j-feweekly-overlay-input:focus {
+#j-feweekly-comment-input:focus,
+#j-feweekly-tag-input:focus {
     border-color:rgba(82, 168, 236, 0.8);
     outline:0;
     -webkit-box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
     box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
 }
 
-#j-feweekly-overlay-btn-wrapper {
+#j-feweekly-button-wrapper {
     margin-top:16px;
     line-height:50px;
     float:right;

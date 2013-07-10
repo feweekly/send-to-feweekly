@@ -23,17 +23,20 @@
     "infoSaved": {
         "message": "Page Saved!"
     },
-    "infoDescriptionEmpty": {
-        "message": "Description is empty!"
+    "infoCommentEmpty": {
+        "message": "Comment is empty!"
     },
-    "infoDescriptionSaving": {
-        "message": "Saving description..."
+    "infoCommentSaving": {
+        "message": "Saving comment..."
     },
-    "infoDescriptionSaved": {
-        "message": "Description saved!"
+    "infoCommentSaved": {
+        "message": "Comment saved!"
     },
     "btnComment": {
         "message": "Comment"
+    },
+    "btnTag": {
+        "message": "Add Tag"
     },
     "btnClose": {
         "message": "Close"
