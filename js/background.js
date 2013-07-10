@@ -28,6 +28,7 @@ $(function () {
                 'js/html2markdown/htmldomparser.js',
                 'js/html2markdown/html2markdown.js',
                 'js/zepto.min.js',
+                'vendor/Autocomplete/Autocomplete.js',
                 'js/clearly.js',
                 'js/notify.js'
             ], callback);
@@ -80,7 +81,7 @@ $(function () {
             }
 
             loadNotificationUIIntoPage(tab, url, function () {
-                console.log('feweekly.sendPage.fromContextMenu');
+                console.log('feweekly.addPage.fromContextMenu');
             });
         }
 
@@ -95,7 +96,7 @@ $(function () {
 
     // Listener for messages
     util.addMessageListener(function messageListenerCallback(request, sender, sendResponse) {
-        var tabId, url, title, html, markdown, comment;
+        var tabId, url, title, html, markdown, comment, tags;
 
         if (request.action === 'getSetting') {
             sendResponse({'value': util.getSetting(request.key)});
@@ -114,7 +115,7 @@ $(function () {
             return false;
 
         // 保存页面内容
-        } else if (request.action === 'sendPage') {
+        } else if (request.action === 'addPage') {
             tabId = (sender && sender.tab && sender.tab.id ? sender.tab.id : null);
             title = request.title;
             url = request.url;
@@ -125,7 +126,7 @@ $(function () {
                 links = request.data.links || [],
                 videos = request.data.videos || [];
 
-            feweekly.add({title: title, url: url, html: html, markdown: markdown, images: images, videos: videos, links: links}, {
+            feweekly.addPage({title: title, url: url, html: html, markdown: markdown, images: images, videos: videos, links: links}, {
                 success: function () {
                     if (request.showSavedToolbarIcon && request.showSavedToolbarIcon === true) {
                         showSavedToolbarIcon(tabId);
@@ -154,11 +155,11 @@ $(function () {
             return true;
 
         // 保存摘要
-        } else if (request.action === 'sendComment') {
+        } else if (request.action === 'addComment') {
             url = request.url;
             comment = request.data;
 
-            feweekly.update({url: url, comment: comment}, {
+            feweekly.addComment({url: url, comment: comment}, {
                 success: function () {
                     util.sendMessageToTab(sender.tab, {status: 'success'});
                     sendResponse({status: 'success'});
@@ -173,6 +174,88 @@ $(function () {
                         util.sendMessageToTab(sender.tab, {status: 'error', error: xhr.getResponseHeader('X-Error')});
                     }, 100);
 
+                    sendResponse({status: 'error'});
+                }
+            });
+
+            return true;
+
+        // 加载tags
+        } else if (request.action === "getTags") {
+            var callback = function () {
+                // Get tags list
+                var tagsJSON = util.getSetting("tags"),
+                    tags = "";
+
+                if (tagsJSON) {
+                    tags = JSON.parse(tagsJSON);
+                }
+
+                // Get used tags list
+                var usedTagsJSON = util.getSetting("usedTags"),
+                    usedTags = [];
+
+                if (usedTagsJSON) {
+                    var usedTagsObject = JSON.parse(usedTagsJSON);
+                    var usedTagsObjectArray = [];
+                    for (var tagKey in usedTagsObject) {
+                        usedTagsObjectArray.push(usedTagsObject[tagKey]);
+                    }
+
+                    // Sort usedTagsObjectArray based on count
+                    usedTagsObjectArray.sort(function (a, b) {
+                        a = new Date(a.timestamp);
+                        b = new Date(b.timestamp);
+                        return a < b ? -1 : a > b ? 1 : 0;
+                    });
+
+                    // Get all keys tags
+                    for (var j = 0; j < usedTagsObjectArray.length; j++) {
+                        usedTags.push(usedTagsObjectArray[j].tag);
+                    }
+
+                    // Reverse to set the last recent used tags to the front
+                    usedTags.reverse();
+                }
+
+                feweekly.log('background.getTags', {"tags": tags, "usedTags": usedTags});
+
+                sendResponse({"tags": tags, "usedTags": usedTags});
+            };
+
+            feweekly.getTags({
+                success: callback,
+                error: callback
+            });
+
+            return true;
+
+        // 添加标签
+        } else if (request.action === "addTags") {
+            tabId = (sender && sender.tab && sender.tab.id ? sender.tab.id : null);
+
+            url = request.url;
+            tags = request.tags;
+
+            feweekly.addTags({url: url, tags: tags}, {
+                success: function () {
+                    var usedTagsJSON = util.getSetting("usedTags"),
+                        usedTags = usedTagsJSON ? JSON.parse(usedTagsJSON) : {};
+
+                    // Check for each tag if it's already in the used tags
+                    for (var i = 0; i < tags.length; i++) {
+                        var tagToSave = tags[i].trim();
+                        var newUsedTagObject = {
+                            "tag": tagToSave,
+                            "timestamp": new Date()
+                        };
+                        usedTags[tagToSave] = newUsedTagObject;
+                    }
+                    util.setSetting("usedTags", JSON.stringify(usedTags));
+
+                    sendResponse({status: "success"});
+                },
+                error: function () {
                     sendResponse({status: 'error'});
                 }
             });
@@ -219,7 +302,7 @@ $(function () {
         }
 
         loadNotificationUIIntoPage(tab, url, function () {
-            console.log('feweekly.sendPage.handleSaveToFeweekly');
+            console.log('feweekly.addPage.handleSaveToFeweekly');
         });
     }
 

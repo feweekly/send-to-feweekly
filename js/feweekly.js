@@ -2,10 +2,14 @@
 var feweekly = (function () {
 
     var contributeAPI = '/contributions/add',
-        updateAPI = '/contributions/update',
+        commentAPI = '/contributions/comment',
+        getTagsAPI = '/contributions/tags',
+        addTagsAPI = '/contributions/tag',
         subscribeAPI = '/subscribes/add',
         domain = 'http://www.feweekly.com',
         domainDebug = 'http://www.dev.feweekly.com',
+        tagsCacheExpire = 24 * 60 * 60,
+        // tagsCacheExpire = 0,
         version = '0.0.2',
         showReleaseNotes = true;
 
@@ -26,22 +30,24 @@ var feweekly = (function () {
      * @param {String} url
      * @param {Object} options
      */
-    function update(data, options) {
+    function addComment(data, options) {
+        if (!feweekly.isSubscribed()) return;
+
         var postData = {
             url: data.url,
             email: util.getSetting('email'),
             comment: data.comment
         };
 
-        feweekly.log('update', JSON.stringify(postData));
+        feweekly.log('addComment', JSON.stringify(postData));
 
         $.ajax({
-            url: feweekly.getDomain() + updateAPI,
+            url: feweekly.getDomain() + commentAPI,
             type: 'POST',
             data: postData,
             dataType: 'json',
             success: function (response) {
-                feweekly.log('update.complete', JSON.stringify(response));
+                feweekly.log('addComment.complete', JSON.stringify(response));
                 if (response.status) {
                     options.success(response);
                 } else {
@@ -59,7 +65,9 @@ var feweekly = (function () {
      * @param {Object} data
      * @param {Object} options
      */
-    function add(data, options) {
+    function addPage(data, options) {
+        if (!feweekly.isSubscribed()) return;
+
         var postData = {
             email: util.getSetting('email'),
             url: data.url,
@@ -70,7 +78,7 @@ var feweekly = (function () {
             videos: JSON.stringify(data.videos || [])
         };
 
-        feweekly.log('add', JSON.stringify(postData));
+        feweekly.log('addPage', JSON.stringify(postData));
 
         $.ajax({
             url: feweekly.getDomain() + contributeAPI,
@@ -78,7 +86,7 @@ var feweekly = (function () {
             data: postData,
             dataType: 'json',
             success: function (response) {
-                feweekly.log('add.complete', JSON.stringify(response));
+                feweekly.log('addPage.complete', JSON.stringify(response));
 
                 if (response.status) {
                     options.success(response);
@@ -102,29 +110,107 @@ var feweekly = (function () {
 
         feweekly.log('subscribe', JSON.stringify(email));
 
-        try {
-            $.ajax({
-                url: feweekly.getDomain() + subscribeAPI,
-                type: 'POST',
-                data: {
-                    'data[email]': email,
-                    'data[source]': util.isChrome() ? 'chrome' : 'safari',
-                },
-                dataType: 'json',
-                success: function (response) {
-                    feweekly.log('subscribe.complete', JSON.stringify(response));
+        $.ajax({
+            url: feweekly.getDomain() + subscribeAPI,
+            type: 'POST',
+            data: {
+                'data[email]': email,
+                'data[source]': util.isChrome() ? 'chrome' : 'safari',
+            },
+            dataType: 'json',
+            success: function (response) {
+                feweekly.log('subscribe.complete', JSON.stringify(response));
 
-                    if (response.status) {
-                        util.setSetting('email', email);
-                    }
-
-                    callbacks.success();
-                },
-                error: function (request) {
-                    callbacks.error(request.status, request);
+                if (response.status) {
+                    util.setSetting('email', email);
                 }
-            });
-        } catch (e) {}
+
+                callbacks.success();
+            },
+            error: function (request) {
+                callbacks.error(request.status, request);
+            }
+        });
+    }
+
+    /**
+     * get tags for contributions * Cache for 1 day
+     * @param {Object} options
+     */
+    function getTags(options) {
+        if (!feweekly.isSubscribed()) return;
+
+        options = options || {};
+
+        var tsTagsUpdatedSince = util.getSetting('tsTagsUpdatedSince'),
+            tsNow = (new Date().getTime() / 1000).toFixed(0);
+
+        // check for cache expire
+        if ((tsTagsUpdatedSince + tagsCacheExpire) > tsNow) {
+            return options.success();
+        }
+
+        $.ajax({
+            url: feweekly.getDomain() + getTagsAPI,
+            type: 'get',
+            dataType: 'json',
+            success: function (response) {
+                feweekly.log('getTags.complete', JSON.stringify(response));
+
+                if (response.tags) {
+                    // If a tagslist is in the response replace the tags
+                    util.setSetting('tags', JSON.stringify(response.tags));
+                }
+
+                // Save since value for further requests
+                util.setSetting('tsTagsUpdatedSince', tsNow);
+
+                if (options.success) {
+                    options.success();
+                }
+
+            },
+            error: function () {
+                if (options.error) {
+                    options.error();
+                }
+            }
+        });
+    }
+
+    /**
+     * add tags for contribution
+     * @param {Object} data
+     */
+    function addTags(data, options) {
+        if (!feweekly.isSubscribed()) return;
+
+        var postData = {
+            email: util.getSetting('email'),
+            url: data.url,
+            tags: data.tags
+        };
+
+        feweekly.log('addTags', JSON.stringify(postData));
+
+        $.ajax({
+            url: feweekly.getDomain() + addTagsAPI,
+            type: 'POST',
+            data: postData,
+            dataType: 'json',
+            success: function (response) {
+                feweekly.log('addTags.complete', JSON.stringify(response));
+
+                if (response.status) {
+                    options.success(response);
+                } else {
+                    options.error(response);
+                }
+            },
+            error: function (request) {
+                options.error(request.status, request);
+            }
+        });
     }
 
     /**
@@ -139,8 +225,10 @@ var feweekly = (function () {
     }
 
     return {
-        add: add,
-        update: update,
+        addPage: addPage,
+        addComment: addComment,
+        addTags: addTags,
+        getTags: getTags,
         subscribe: subscribe,
         isSubscribed: isSubscribed,
         isDebug: isDebug,

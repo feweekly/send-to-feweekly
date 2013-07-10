@@ -1,3 +1,4 @@
+/* globals Autocomplete */
 (function () {
     var FEWEEKLY_DOMAIN = 'www.feweekly.com',
         EDITOR_MODE_NULL = 0,
@@ -53,7 +54,9 @@
                         '<textarea id="j-feweekly-comment-input" name="feweekly-comment-input"></textarea>' +
                     '</div>' +
                     '<div id="j-feweekly-tag-wrapper" style="display:none">' +
+                        '<div id="j-feweekly-tag-wrapper-inner">' +
                         '<input type="text" id="j-feweekly-tag-input" name="feweekly-tag-input" />' +
+                        '</div>' +
                     '</div>' +
                 '</div>' +
             '</div>';
@@ -156,8 +159,7 @@
 
             this.ndBtnTag.on('click', function () {
                 console.log('feweekly.notify.tag');
-                self.editorMode = EDITOR_MODE_TAG;
-                self.openEditor();
+                self.onGetTags();
             });
 
             this.ndBtnSave.on('click', function () {
@@ -225,7 +227,7 @@
             var self = this;
             setTimeout(function () {
                 self.isItemSaved = true;
-                self.displayMessage(chrome.i18n.getMessage('infoSaved'));
+                self.displayMessage(chrome.i18n.getMessage('infoPageSaved'));
                 self.showEditorButtons();
             }, 30);
         },
@@ -290,6 +292,19 @@
                     break;
                 }
             }
+        },
+
+        // 设置自动完成
+        setTags: function (tags) {
+            new Autocomplete("j-feweekly-tag-input", {
+                useNativeInterface: false,
+                srcType : "array",
+                srcData : tags.tags,
+                srcCleanData : tags.usedTags,
+                // valueSelectedCallback : function () { self.inputValueChangedCallback() }
+            });
+            this.editorMode = EDITOR_MODE_TAG;
+            this.openEditor();
         },
 
         browserPrefix: function () {
@@ -376,18 +391,18 @@
             this.requestListener = undefined;
         },
 
-        sendMessage: function (message, cb) {
+        sendMessage: function (message, callback) {
             if (this.isChrome()) {
                 if (window.chrome.runtime.sendMessage) {
-                    window.chrome.runtime.sendMessage(message, cb);
+                    window.chrome.runtime.sendMessage(message, callback);
                 } else if (window.chrome.extension.sendMessage) {
-                    window.chrome.extension.sendMessage(message, cb);
+                    window.chrome.extension.sendMessage(message, callback);
                 } else {
-                    window.chrome.extension.sendRequest(message, cb);
+                    window.chrome.extension.sendRequest(message, callback);
                 }
             } else if (this.isSafari()) {
-                // if (cb) {
-                //     message["__cbId"] = Callbacker.addCb(cb);
+                // if (callback) {
+                //     message["__cbId"] = Callbacker.addCb(callback);
                 // }
 
                 safari.self.tab.dispatchMessage("message", message);
@@ -408,12 +423,12 @@
             if (window.__feweeklyUrlSaved === this.urlToSave) {
                 this.overlay.wasSaved();
             } else {
-                this.overlay.displayMessage(chrome.i18n.getMessage('infoSaving'));
+                this.overlay.displayMessage(chrome.i18n.getMessage('infoPageSaving'));
                 this.addMessageListener(function (response) {
                     self.handlePageResponse(response);
                 });
                 this.sendMessage({
-                    action: "sendPage",
+                    action: "addPage",
                     showSavedToolbarIcon: true,
                     title: document.title,
                     url: window.location.toString(),
@@ -443,7 +458,7 @@
                     self.handleCommentResponse(response);
                 });
                 this.sendMessage({
-                    action: "sendComment",
+                    action: "addComment",
                     url: window.location.toString(),
                     data: comment
                 }, function () {});
@@ -456,16 +471,39 @@
             if (response.status === "success") {
                 this.overlay.displayMessage(chrome.i18n.getMessage('infoCommentSaved'));
             } else if (response.status === "error") {
-                this.overlay.displayMessage(chrome.i18n.getMessage('infoCommentError'));
+                this.overlay.displayMessage(chrome.i18n.getMessage('infoError'));
             }
         },
 
         getTags: function () {
-            console.log('FeweeklyMessenger.getTags');
+            var self = this;
+            this.overlay.displayMessage(chrome.i18n.getMessage('infoTagLoading'));
+            this.sendMessage({action: "getTags"}, function (response) {
+                self.overlay.setTags(response);
+            });
         },
 
-        saveTags: function () {
-            console.log('FeweeklyMessenger.saveTags');
+        saveTags: function (tags) {
+            if (!tags) {
+                this.overlay.closeEditor();
+                this.overlay.displayMessage(chrome.i18n.getMessage('infoTagSaving'));
+            } else {
+                this.sendMessage({
+                    action: "addTags",
+                    url: window.location.toString(),
+                    tags: tags.split(/[,|，]\s*/)
+                }, bind(this.handleTagResponse, this));
+            }
+        },
+
+        handleTagResponse: function (response) {
+            this.overlay.closeEditor(true);
+            this.overlay.getReadyToHide();
+            if (response.status === "success") {
+                this.overlay.displayMessage(chrome.i18n.getMessage('infoTagSaved'));
+            } else if (response.status === "error") {
+                this.overlay.displayMessage(chrome.i18n.getMessage('infoError'));
+            }
         },
 
     };

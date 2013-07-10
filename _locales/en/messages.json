@@ -17,10 +17,13 @@
     "errorInvalid": {
         "message": "Sorry, you can only save valid web pages to Feweekly."
     },
-    "infoSaving": {
+    "infoError": {
+        "message": "Oops, unexpected error occurred"
+    },
+    "infoPageSaving": {
         "message": "Saving to Feweekly..."
     },
-    "infoSaved": {
+    "infoPageSaved": {
         "message": "Page Saved!"
     },
     "infoCommentEmpty": {
@@ -31,6 +34,15 @@
     },
     "infoCommentSaved": {
         "message": "Comment saved!"
+    },
+    "infoTagLoading": {
+        "message": "Loading tags..."
+    },
+    "infoTagSaving": {
+        "message": "Saving tags..."
+    },
+    "infoTagSaved": {
+        "message": "Tags saved!"
     },
     "btnComment": {
         "message": "Comment"
