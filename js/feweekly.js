@@ -1,8 +1,9 @@
 /* globals util */
 var feweekly = (function () {
 
-    var contributeAPI = '/news_letter/contributions/add',
-        subscribeAPI = '/news_letter/subscribes/add',
+    var contributeAPI = '/contributions/add',
+        updateAPI = '/contributions/update',
+        subscribeAPI = '/subscribes/add',
         domain = 'http://www.feweekly.com',
         domainDebug = 'http://www.dev.feweekly.com',
         version = '0.0.2',
@@ -21,9 +22,41 @@ var feweekly = (function () {
     }
 
     /**
-     * Submit a link to feweeekly
-     * @param {String} title
+     * Add description for a link
      * @param {String} url
+     * @param {Object} options
+     */
+    function update(data, options) {
+        var postData = {
+            url: data.url,
+            email: util.getSetting('email'),
+            description: data.description
+        };
+
+        feweekly.log('update', JSON.stringify(postData));
+
+        $.ajax({
+            url: feweekly.getDomain() + updateAPI,
+            type: 'POST',
+            data: postData,
+            dataType: 'json',
+            success: function (response) {
+                feweekly.log('update.complete', JSON.stringify(response));
+                if (response.status) {
+                    options.success(response);
+                } else {
+                    options.error(response);
+                }
+            },
+            error: function (request) {
+                options.error(request.status, request);
+            }
+        });
+    }
+
+    /**
+     * Submit a link to feweeekly
+     * @param {Object} data
      * @param {Object} options
      */
     function add(data, options) {
@@ -36,10 +69,6 @@ var feweekly = (function () {
             images: JSON.stringify(data.images || []),
             videos: JSON.stringify(data.videos || [])
         };
-
-        if (options.referer) {
-            postData.referer = options.referer;
-        }
 
         feweekly.log('add', JSON.stringify(postData));
 
@@ -111,6 +140,7 @@ var feweekly = (function () {
 
     return {
         add: add,
+        update: update,
         subscribe: subscribe,
         isSubscribed: isSubscribed,
         isDebug: isDebug,

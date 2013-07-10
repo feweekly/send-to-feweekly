@@ -12,184 +12,146 @@
     FeweeklyOverlay.prototype = {
         create: function () {
             // remove any existing elements
-            var ndStyleSheet = document.getElementById('j-feweekly-style');
-            if (ndStyleSheet) {
-                ndStyleSheet.parentNode.removeChild(ndStyleSheet);
-            }
+            var ndOverlay = $('#j-feweekly-overlay');
+            if (ndOverlay) { ndOverlay.remove(); }
 
-            var ndOverlay = document.getElementById('j-feweekly-overlay');
-            if (ndOverlay) {
-                ndOverlay.parentNode.removeChild(ndOverlay);
-            }
-
-            // figure out how much we need to scale the overlay to match the user's zoom level
-            var scale = window.innerWidth / screen.availWidth;
-            if (scale < 1) {
-                scale = 1;
-            }
-
-            var userAgent       = window.navigator.userAgent;
-            this.isMobile       = (userAgent.match(/iPad/i) || userAgent.match(/iPhone/i));
-            this.isSafari       = (userAgent.indexOf('Safari') !== -1 && userAgent.indexOf('Chrome') === -1);
-
-            // overlay values
-            // TODO exension image url
-            var height          = 80 * scale;
-            var fontSize        = 20 * scale;
-            var lineHeight      = height;
-            var logoSrc         = chrome.extension.getURL('img/Feweekly-Chrome-OptionsLogo.png');
+            var userAgent = window.navigator.userAgent;
+            this.isSafari = (userAgent.indexOf('Safari') !== -1 && userAgent.indexOf('Chrome') === -1);
 
             this.shadowHeight = 20;
-
             this.itemWasSaved = false;
 
-            // TODO refactor css here
-            var styles = '\
-            #j-feweekly-overlay\
-            {\
-                visibility:hidden;\
-                position:fixed;\
-                top:0px !important;\
-                left:0px !important;\
-                width:100% !important;\
-                height:' + height + 'px;\
-                -webkit-box-shadow:0px 0px ' + this.shadowHeight + 'px rgba(0,0,0,0.4);\
-                -moz-box-shadow:0px 0px ' + this.shadowHeight + 'px rgba(0,0,0,0.4);\
-                -o-box-shadow:0px 0px ' + this.shadowHeight + 'px rgba(0,0,0,0.4);\
-                box-shadow:0px 0px ' + this.shadowHeight + 'px rgba(0,0,0,0.4);\
-                z-index:2147483647;\
-                background: rgb(239,239,239);\
-                background: -moz-linear-gradient(top, rgba(239,239,239,0.98) 0%, rgba(253,253,253,0.98) 100%);\
-                background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(239,239,239,0.98)), color-stop(100%,rgba(253,253,253,0.98)));\
-                background: -webkit-linear-gradient(top, rgba(239,239,239,0.98) 0%,rgba(253,253,253,0.98) 100%);\
-                background: -o-linear-gradient(top, rgba(239,239,239,0.98) 0%,rgba(253,253,253,0.98) 100%);\
-                background: -ms-linear-gradient(top, rgba(239,239,239,0.98) 0%,rgba(253,253,253,0.98) 100%);\
-                background: linear-gradient(top, rgba(239,239,239,0.98) 0%,rgba(253,253,253,0.98) 100%);\
-                filter: progid:DXImageTransform.Microsoft.gradient( startColorstr=\'#efefef\', endColorstr=\'#fdfdfd\',GradientType=0 );\
-                border-bottom:1px solid white;\
-                font-size:' + fontSize + 'px !important;\
-                font-family:HelveticaNeue,Helvetica,Arial !important;\
-                line-height:' + lineHeight + 'px !important;\
-                text-align: left;\
-                color: #4b4b4b !important;\
-                -webkit-backface-visibility: hidden;\
-                -webkit-perspective: 1000;\
-            }\
-            #j-feweekly-overlay-logo\
-            {\
-                display: block;\
-                width: 225px;\
-                height: 75px;\
-                float: left;\
-                border: 0; \
-                background: url(' + logoSrc + ') left center no-repeat;\
-            }\
-            #j-feweekly-overlay-wrapper\
-            {\
-                padding-left:7%;\
-                padding-right: 7%;\
-                height: 100%;\
-            }\
-            #j-feweekly-overlay-label\
-            {\
-                text-indent:80px;\
-                font-weight:bold;\
-            }\
-            ';
-
             // add overlay
-            var overlay = '\
-            <div id="j-feweekly-overlay">\
-                <div id="j-feweekly-overlay-wrapper">\
-                    <a id="j-feweekly-overlay-logo" href="http://' + FEWEEKLY_DOMAIN + '" target="_blank"></a>\
-                    <div id="j-feweekly-overlay-label"></div>\
-                </div>\
-            </div>\
-            ';
+            var overlay = '' +
+            '<div id="j-feweekly-overlay">' +
+                '<div id="j-feweekly-overlay-wrapper">' +
+                    '<div id="j-feweekly-overlay-btn-wrapper" style="display:none">' +
+                        '<span id="j-feweekly-overlay-close" class="feweekly-btn feweekly-btn--large"></span>' +
+                        '<span id="j-feweekly-overlay-edit" class="feweekly-btn feweekly-btn--large feweekly-btn--danger"></span>' +
+                        '<span id="j-feweekly-overlay-save" class="feweekly-btn feweekly-btn--large feweekly-btn--success"></span>' +
+                    '</div>' +
+                    '<a id="j-feweekly-overlay-logo" href="http://' + FEWEEKLY_DOMAIN + '" target="_blank"></a>' +
+                    '<div id="j-feweekly-overlay-message"></div>' +
+                    '<div id="j-feweekly-overlay-input-wrapper" style="display:none">' +
+                        '<textarea id="j-feweekly-overlay-input" name="feweekly-overlay-input"></textarea>' +
+                    '</div>' +
+                '</div>' +
+            '</div>';
 
             // add to DOM
-            var overlayFakeContainer = document.createElement('div');
-            overlayFakeContainer.innerHTML = '<style id="j-feweekly-style">' + styles + '</style>' + overlay;
-
-            var bodys = document.getElementsByTagName('body');
-            var body = bodys ? bodys[0] : false;
-
-            if (!body) {
-                body = document.documentElement;
-            }
-
-            body.appendChild(overlayFakeContainer);
+            $('body').append(overlay);
 
             // animate in
             var self = this;
             setTimeout(function () { self.show(); }, 0);
 
-            this.closeToolbarTime = 3000;
+            this.overlayCloseTimeout = 3000;
             this.mouseIsOverOverlay = false;
+
+            // element handle
+            this.ndOverlay = $('#j-feweekly-overlay');
+            this.ndMessage = $('#j-feweekly-overlay-message');
+            this.ndInputWrapper = $('#j-feweekly-overlay-input-wrapper');
+            this.ndInput = $('#j-feweekly-overlay-input');
+            this.ndBtnWrapper = $('#j-feweekly-overlay-btn-wrapper');
+            this.ndBtnClose = $('#j-feweekly-overlay-close');
+            this.ndBtnEdit = $('#j-feweekly-overlay-edit');
+            this.ndBtnSave = $('#j-feweekly-overlay-save');
+
+            this.ndBtnSave.text(chrome.i18n.getMessage('btnSave'));
+            this.ndBtnEdit.text(chrome.i18n.getMessage('btnComment'));
+            this.ndBtnClose.text(chrome.i18n.getMessage('btnClose'));
         },
 
         displayMessage: function (msg) {
-            document.getElementById('j-feweekly-overlay-label').innerHTML = msg;
+            this.ndMessage.html(msg);
         },
 
         getReadyToHide: function () {
             var self = this;
-            clearTimeout(self.hideTimer);
-            self.hideTimer = setTimeout(function () {
+            clearTimeout(self.overlayCloseTimer);
+            self.overlayCloseTimer = setTimeout(function () {
                 self.hide();
-            }, this.closeToolbarTime);
+            }, this.overlayCloseTimeout);
         },
 
         cancelPendingHide: function () {
-            clearTimeout(this.hideTimer);
-            this.hideTimer = undefined;
+            clearTimeout(this.overlayCloseTimer);
+            this.overlayCloseTimer = undefined;
         },
 
         show: function () {
-            this.hidesOnClick = false;
-
             this.cancelPendingHide();
 
-            var overlay = document.getElementById('j-feweekly-overlay');
-            overlay.style[this.browserPrefix() + 'Transform'] = 'translate3d(0px,' + (0 - overlay.offsetHeight - this.shadowHeight) + 'px,0px)';
+            var self = this,
+                prefix = self.browserPrefix(),
+                transitionProperty = prefix + 'Transition',
+                transformProperty = prefix + 'Transform',
+                overlay = document.getElementById('j-feweekly-overlay');
+
+            overlay.style[transformProperty] = 'translate3d(0px,' + (0 - overlay.offsetHeight - this.shadowHeight) + 'px,0px)';
             overlay.style.visibility = 'visible';
 
-            var self = this;
-            overlay.onclick = function () {
-                if (self.hidesOnClick) {
-                    self.hide();
-                }
-            };
+            // TODO fix animation here
+            // this.ndOverlay.css(prefix + 'Transform', 'translate3d(0px,' + (0 - this.ndOverlay.height() - this.shadowHeight) + 'px,0px)');
+            // this.ndOverlay.css('visibility', 'visible');
 
             // Don't hide the notification if the mouse is over the UI
             this.mouseIsOverOverlay = false;
+            this.isDescriptionInputOpen = false;
 
-            overlay.onmouseover = function () {
+            this.ndOverlay.on('mouseover', function () {
                 self.cancelPendingHide();
                 self.mouseIsOverOverlay = true;
-            };
+            });
 
-            overlay.onmouseout = function () {
+            this.ndOverlay.on('mouseout', function () {
+                if (self.isDescriptionInputOpen) { return; }
                 self.mouseIsOverOverlay = false;
-                if (self.itemWasSaved === false) {
-                    return;
-                }
-                self.closeToolbarTime = 1500;
+                if (self.itemWasSaved === false) { return; }
+                self.overlayCloseTimeout = 1500;
                 self.getReadyToHide();
-            };
+            });
+
+            this.ndBtnClose.on('click', function () {
+                self.mouseIsOverOverlay = false;
+                self.isDescriptionInputOpen = false;
+                self.hide();
+            });
+
+            this.ndBtnEdit.on('click', function () {
+                self.editDescription();
+            });
+
+            this.ndBtnSave.on('click', function () {
+                self.saveDescription();
+            });
+
+            // this.ndInput.on('blur', function () {
+            //     self.mouseIsOverOverlay = false;
+            //     self.isDescriptionInputOpen = false;
+            //     self.getReadyToHide();
+            // });
 
             setTimeout(function () {
-                var prefix = self.browserPrefix();
-                overlay.style[prefix + 'Transition'] = '-' + prefix + '-transform 0.3s ease-out';
-                overlay.style[prefix + 'Transform'] = 'translate3d(0px,0px,0px)';
+                overlay.style[transitionProperty] = '-' + prefix + '-transform 0.3s ease-out';
+                overlay.style[transformProperty] = 'translate3d(0px,0px,0px)';
+
+                // TODO fix animation here
+                // self.ndOverlay.css(transitionProperty, '-' + prefix + '-transform 0.3s ease-out');
+                // self.ndOverlay.css(transformProperty, 'translate3d(0px,0px,0px)');
 
                 if (self.isSafari) {
                     // Oh Safari ... we cannot have position:fixed and transform, transition
                     // values, because the notification ui will stick at the top of the window
                     // while the user scrolls so we remove it after the slide in animation
                     setTimeout(function () {
-                        overlay.style[prefix + 'Transition'] = '';
-                        overlay.style[prefix + 'Transform'] = '';
+                        overlay.style[transitionProperty] = '';
+                        overlay.style[transformProperty] = '';
+
+                        // TODO fix animation here
+                        // self.ndOverlay.css(transitionProperty, '');
+                        // self.ndOverlay.css(transformProperty, '');
                     }, 300);
                 }
 
@@ -198,27 +160,27 @@
 
         hide: function () {
             if (this.mouseIsOverOverlay) return;
+            if (this.isDescriptionInputOpen) return;
 
-            var hideDelay = 0.3;
+            var hideDelay = 0.3,
+                self = this,
+                prefix = this.browserPrefix(),
+                overlay = document.getElementById('j-feweekly-overlay'),
+                transitionProperty = prefix + 'Transition',
+                transformProperty = prefix + 'Transform';
 
-            var overlay = document.getElementById('j-feweekly-overlay');
-            var prefix = this.browserPrefix();
             if (this.isSafari) {
-                // We removed the Transition style in the show method now we have
-                // to readd it
-                overlay.style[prefix + 'Transition'] = '-' + prefix + '-transform ' +  hideDelay  + 's ease-out';
+                overlay.style[transitionProperty] = '-' + prefix + '-transform ' +  hideDelay  + 's ease-out';
+                // We removed the Transition style in the show method now we have to readd it
+                // this.ndOverlay.css(transitionProperty, '-' + prefix + '-transform ' +  hideDelay  + 's ease-out');
             }
-            overlay.style[prefix + 'Transform'] = 'translate3d(0px,' + (0 - overlay.offsetHeight - this.shadowHeight) + 'px,0px)';
-
+            overlay.style[transformProperty] = 'translate3d(0px,' + (0 - overlay.offsetHeight - this.shadowHeight) + 'px,0px)';
+            // this.ndOverlay.css(transformProperty, 'translate3d(0px,' + (0 - this.ndOverlay.height() - this.shadowHeight) + 'px,0px)');
 
             setTimeout(function () {
-                overlay.style.visibility = 'hidden';
-                overlay.parentNode.removeChild(overlay);
+                self.ndOverlay.css('visibility', 'hidden');
+                self.ndOverlay.remove();
             }, hideDelay * 1000);
-
-            if (this.windowResizeHandler && window.removeEventListener) {
-                window.removeEventListener("resize", this.windowResizeHandler);
-            }
         },
 
         wasSaved: function () {
@@ -226,9 +188,65 @@
             setTimeout(function () {
                 self.itemWasSaved = true;
                 self.displayMessage(chrome.i18n.getMessage('infoSaved'));
+                self.showInputButtons();
+            }, 30);
+        },
+
+        showInputButtons: function () {
+            var self = this;
+            setTimeout(function () {
+                self.ndBtnSave.hide();
+                self.ndBtnWrapper.show();
                 self.getReadyToHide();
             }, 30);
+        },
 
+        saveDescription: function () {
+            var self = this,
+                description = this.trim(this.ndInput.val());
+
+            if (!description) {
+                this.discardDescription();
+                this.displayMessage(chrome.i18n.getMessage('infoDescriptionEmpty'));
+            } else {
+                // TODO refactor
+                window.__feweeklyMessenger.addMessageListener(function (request) {
+                    self.handleDescriptionResponse(request);
+                });
+                window.__feweeklyMessenger.sendMessage({
+                    action: "sendDescription",
+                    url: window.location.toString(),
+                    data: description
+                }, function () {});
+            }
+        },
+
+        handleDescriptionResponse: function (response) {
+            this.discardDescription();
+            this.getReadyToHide();
+            if (response.status === "success") {
+                this.displayMessage(chrome.i18n.getMessage('infoDescriptionSaved'));
+            } else if (response.status === "error") {
+                // Tried to use a bookmarklet that was created for a different account
+                this.displayMessage(chrome.i18n.getMessage('infoDescriptionError'));
+            }
+        },
+
+        editDescription: function () {
+            this.isDescriptionInputOpen = true;
+            this.ndMessage.hide();
+            this.ndBtnEdit.hide();
+            this.ndBtnSave.show();
+            this.ndInputWrapper.show();
+            this.ndInput.focus();
+        },
+
+        discardDescription: function () {
+            this.isDescriptionInputOpen = false;
+            this.ndInputWrapper.hide();
+            this.ndMessage.show();
+            this.ndBtnSave.hide();
+            this.ndBtnEdit.show();
         },
 
         browserPrefix: function () {

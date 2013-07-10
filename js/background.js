@@ -23,13 +23,15 @@ $(function () {
         if (url) {
             util.executeScriptInTab(tab, 'window.__feweeklyUrlToSave = "' + url + '"');
         }
-        util.executeMultiScriptFromURLInTab(tab, [
-            'js/html2markdown/htmldomparser.js',
-            'js/html2markdown/html2markdown.js',
-            'js/zepto.min.js',
-            'js/clearly.js',
-            'js/notify.js'
-        ], callback);
+        util.insertCssFromUrlInTab(tab, 'css/notify.css', function () {
+            util.executeMultiScriptFromURLInTab(tab, [
+                'js/html2markdown/htmldomparser.js',
+                'js/html2markdown/html2markdown.js',
+                'js/zepto.min.js',
+                'js/clearly.js',
+                'js/notify.js'
+            ], callback);
+        });
     }
 
     function showSavedToolbarIcon(tabId) {
@@ -93,7 +95,7 @@ $(function () {
 
     // Listener for messages
     util.addMessageListener(function messageListenerCallback(request, sender, sendResponse) {
-        var tabId, url, title, html, markdown;
+        var tabId, url, title, html, markdown, description;
 
         if (request.action === 'getSetting') {
             sendResponse({'value': util.getSetting(request.key)});
@@ -111,6 +113,7 @@ $(function () {
             sendResponse({});
             return false;
 
+        // 保存页面内容
         } else if (request.action === 'sendPage') {
             tabId = (sender && sender.tab && sender.tab.id ? sender.tab.id : null);
             title = request.title;
@@ -136,6 +139,32 @@ $(function () {
                     // Inject the error message into the overlay
                     setTimeout(function () {
                         // Check for online status
+                        if (!navigator.onLine) {
+                            util.sendMessageToTab(sender.tab, {status: 'error', error: chrome.i18n.getMessage('errorOffline')});
+                            return;
+                        }
+
+                        util.sendMessageToTab(sender.tab, {status: 'error', error: xhr.getResponseHeader('X-Error')});
+                    }, 100);
+
+                    sendResponse({status: 'error'});
+                }
+            });
+
+            return true;
+
+        // 保存摘要
+        } else if (request.action === 'sendDescription') {
+            url = request.url;
+            description = request.data;
+
+            feweekly.update({url: url, description: description}, {
+                success: function () {
+                    util.sendMessageToTab(sender.tab, {status: 'success'});
+                    sendResponse({status: 'success'});
+                },
+                error: function (status, xhr) {
+                    setTimeout(function () {
                         if (!navigator.onLine) {
                             util.sendMessageToTab(sender.tab, {status: 'error', error: chrome.i18n.getMessage('errorOffline')});
                             return;
@@ -359,7 +388,7 @@ $(function () {
         // }
 
         util.setSetting('lastInstalledVersion', VERSION);
-        util.setSetting('debug', true);
+        util.setSetting('debug', false);
 
     }());
 });

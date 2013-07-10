@@ -88,6 +88,14 @@ var util = {
         }
     },
 
+    // TODO 实现Safari的样式注入
+    insertCssFromUrlInTab: function (tab, cssUrl, afterInject) {
+        if (util.isChrome()) {
+            chrome.tabs.insertCSS(tab.id, {file: cssUrl}, afterInject);
+        } else if (util.isSafari()) {
+        }
+    },
+
     executeScriptFromURLInTabWithCallback: function (tab, scriptURL, cb) {
         if (util.isChrome()) {
             chrome.tabs.executeScript(tab.id, {file: scriptURL}, cb);
