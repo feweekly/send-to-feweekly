@@ -3,11 +3,24 @@
         FeweeklyMessenger,
         FeweeklyOverlay;
 
+    function bind(func, context) {
+        if (func.bind) {
+            return func.bind(context);
+        }
+        return function () {
+            return func.apply(context, arguments);
+        };
+    }
+
     /**
      * FeweeklyOverlay is the view itself and contains all of the methods to manipute the overlay and messaging.
      * It does not contain any logic for saving or communication with the extension or server.
      */
-    FeweeklyOverlay = function () { };
+    FeweeklyOverlay = function (options) {
+        this.onSaveDescription = options.onSaveDescription;
+        this.onSaveTags = options.onSaveTags;
+        this.onGetTags = options.onGetTags;
+    };
 
     FeweeklyOverlay.prototype = {
         create: function () {
@@ -124,14 +137,8 @@
             });
 
             this.ndBtnSave.on('click', function () {
-                self.saveDescription();
+                self.onSaveDescription(self.trim(self.ndInput.val()));
             });
-
-            // this.ndInput.on('blur', function () {
-            //     self.mouseIsOverOverlay = false;
-            //     self.isDescriptionInputOpen = false;
-            //     self.getReadyToHide();
-            // });
 
             setTimeout(function () {
                 overlay.style[transitionProperty] = '-' + prefix + '-transform 0.3s ease-out';
@@ -201,37 +208,6 @@
             }, 30);
         },
 
-        saveDescription: function () {
-            var self = this,
-                description = this.trim(this.ndInput.val());
-
-            if (!description) {
-                this.discardDescription();
-                this.displayMessage(chrome.i18n.getMessage('infoDescriptionEmpty'));
-            } else {
-                // TODO refactor
-                window.__feweeklyMessenger.addMessageListener(function (request) {
-                    self.handleDescriptionResponse(request);
-                });
-                window.__feweeklyMessenger.sendMessage({
-                    action: "sendDescription",
-                    url: window.location.toString(),
-                    data: description
-                }, function () {});
-            }
-        },
-
-        handleDescriptionResponse: function (response) {
-            this.discardDescription();
-            this.getReadyToHide();
-            if (response.status === "success") {
-                this.displayMessage(chrome.i18n.getMessage('infoDescriptionSaved'));
-            } else if (response.status === "error") {
-                // Tried to use a bookmarklet that was created for a different account
-                this.displayMessage(chrome.i18n.getMessage('infoDescriptionError'));
-            }
-        },
-
         editDescription: function () {
             this.isDescriptionInputOpen = true;
             this.ndMessage.hide();
@@ -241,12 +217,14 @@
             this.ndInput.focus();
         },
 
-        discardDescription: function () {
+        discardDescription: function (saved) {
             this.isDescriptionInputOpen = false;
             this.ndInputWrapper.hide();
             this.ndMessage.show();
             this.ndBtnSave.hide();
-            this.ndBtnEdit.show();
+            if (!saved) {
+                this.ndBtnEdit.show();
+            }
         },
 
         browserPrefix: function () {
@@ -288,7 +266,12 @@
                 return;
             }
 
-            this.overlay = new FeweeklyOverlay();
+            this.overlay = new FeweeklyOverlay({
+                onSaveDescription: bind(this.saveDescription, this),
+                onSaveTags: bind(this.saveTags, this),
+                onGetTags: bind(this.getTags, this),
+            });
+
             this.initialized = true;
             this.requestListener = undefined;
         },
@@ -346,17 +329,7 @@
             }
         },
 
-        handleMessageResponse: function (response) {
-            if (response.status === "success") {
-                this.overlay.wasSaved();
-            } else if (response.status === "error") {
-                // Tried to use a bookmarklet that was created for a different account
-                this.overlay.displayMessage("Error!");
-                this.overlay.hide();
-            }
-        },
-
-        save: function () {
+        savePage: function () {
             var self = this;
 
             this.overlay.create();
@@ -371,17 +344,70 @@
                 this.overlay.wasSaved();
             } else {
                 this.overlay.displayMessage(chrome.i18n.getMessage('infoSaving'));
-                this.addMessageListener(function (request) {
-                    self.handleMessageResponse(request);
+                this.addMessageListener(function (response) {
+                    self.handlePageResponse(response);
                 });
+                this.sendMessage({
+                    action: "sendPage",
+                    showSavedToolbarIcon: true,
+                    title: document.title,
+                    url: window.location.toString(),
+                    data: window.__getFeweeklyClearlyResults()
+                }, function () {});
             }
+        },
+
+        handlePageResponse: function (response) {
+            if (response.status === "success") {
+                this.overlay.wasSaved();
+            } else if (response.status === "error") {
+                // Tried to use a bookmarklet that was created for a different account
+                this.overlay.displayMessage("Error!");
+                this.overlay.hide();
+            }
+        },
+
+        saveDescription: function (description) {
+            var self = this;
+
+            if (!description) {
+                this.overlay.discardDescription();
+                this.overlay.displayMessage(chrome.i18n.getMessage('infoDescriptionEmpty'));
+            } else {
+                this.addMessageListener(function (response) {
+                    self.handleDescriptionResponse(response);
+                });
+                this.sendMessage({
+                    action: "sendDescription",
+                    url: window.location.toString(),
+                    data: description
+                }, function () {});
+            }
+        },
+
+        handleDescriptionResponse: function (response) {
+            this.overlay.discardDescription(true);
+            this.overlay.getReadyToHide();
+            if (response.status === "success") {
+                this.overlay.displayMessage(chrome.i18n.getMessage('infoDescriptionSaved'));
+            } else if (response.status === "error") {
+                this.overlay.displayMessage(chrome.i18n.getMessage('infoDescriptionError'));
+            }
+        },
+
+        getTags: function () {
+            console.log('FeweeklyMessenger.getTags');
+        },
+
+        saveTags: function () {
+            console.log('FeweeklyMessenger.saveTags');
         },
 
     };
 
     // 真正的处理逻辑
     if (window.__feweeklyMessenger) {
-        window.__feweeklyMessenger.save();
+        window.__feweeklyMessenger.savePage();
     } else {
         // make sure the page has fully loaded before trying anything
         window.setTimeout(function () {
@@ -390,14 +416,7 @@
                 window.__feweeklyMessenger.init();
             }
 
-            window.__feweeklyMessenger.save();
-            window.__feweeklyMessenger.sendMessage({
-                action: "sendPage",
-                showSavedToolbarIcon: true,
-                title: document.title,
-                url: window.location.toString(),
-                data: window.__getFeweeklyClearlyResults()
-            }, function () {});
+            window.__feweeklyMessenger.savePage();
         }, 1);
     }
 })();

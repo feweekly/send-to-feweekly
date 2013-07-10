@@ -1,7 +1,7 @@
 /* globals util, feweekly */
 $(function () {
     var VERSION = feweekly.version,
-        SHOW_RELEASE_NOTES = feweekly.showReleaseNotes,
+        // SHOW_RELEASE_NOTES = feweekly.showReleaseNotes,
         authentication;
 
     // Helpers
@@ -388,7 +388,7 @@ $(function () {
         // }
 
         util.setSetting('lastInstalledVersion', VERSION);
-        util.setSetting('debug', false);
+        util.setSetting('debug', true);
 
     }());
 });
