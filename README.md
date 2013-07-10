@@ -1,4 +1,4 @@
-send-to-feweekly
+Send to Feweekly
 ================
 
-send a link to feweekly
+chrome extension to send a link to [feweekly](http://www.feweekly.com).
