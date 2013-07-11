@@ -45,8 +45,8 @@
                     '<div id="j-feweekly-button-wrapper" style="display:none">' +
                         '<span id="j-feweekly-button-comment" class="feweekly-btn feweekly-btn--large feweekly-btn--warning"></span>' +
                         '<span id="j-feweekly-button-tag" class="feweekly-btn feweekly-btn--large feweekly-btn--warning"></span>' +
-                        '<span id="j-feweekly-button-close" class="feweekly-btn feweekly-btn--large"></span>' +
                         '<span id="j-feweekly-button-save" class="feweekly-btn feweekly-btn--large feweekly-btn--success"></span>' +
+                        '<span id="j-feweekly-button-close" class="feweekly-btn feweekly-btn--large"></span>' +
                     '</div>' +
                     '<a id="j-feweekly-overlay-logo" href="http://' + FEWEEKLY_DOMAIN + '" target="_blank"></a>' +
                     '<div id="j-feweekly-overlay-message"></div>' +
@@ -276,9 +276,19 @@
 
             this.ndBtnSave.hide();
 
-            // 如果保存成功，退出编辑模式
-            // 否则需要显示按钮
+            // 如果保存成功，退出编辑模式，显示另外1个功能的按钮
+            // 否则按照当前的编辑器状态显示按钮
             if (editorContentSaved) {
+                switch (this.editorMode) {
+                case EDITOR_MODE_COMMENT:
+                    this.ndBtnComment.hide();
+                    this.ndBtnTag.show();
+                    break;
+                case EDITOR_MODE_TAG:
+                    this.ndBtnComment.show();
+                    this.ndBtnTag.hide();
+                    break;
+                }
                 this.editorMode = EDITOR_MODE_NULL;
             } else {
                 switch (this.editorMode) {
@@ -300,8 +310,7 @@
                 useNativeInterface: false,
                 srcType : "array",
                 srcData : tags.tags,
-                srcCleanData : tags.usedTags,
-                // valueSelectedCallback : function () { self.inputValueChangedCallback() }
+                srcCleanData : tags.usedTags
             });
             this.editorMode = EDITOR_MODE_TAG;
             this.openEditor();
@@ -349,7 +358,7 @@
             this.overlay = new FeweeklyOverlay({
                 onSaveComment: bind(this.saveComment, this),
                 onSaveTags: bind(this.saveTags, this),
-                onGetTags: bind(this.getTags, this),
+                onGetTags: bind(this.getTags, this)
             });
 
             this.initialized = true;
@@ -504,7 +513,7 @@
             } else if (response.status === "error") {
                 this.overlay.displayMessage(chrome.i18n.getMessage('infoError'));
             }
-        },
+        }
 
     };
 
