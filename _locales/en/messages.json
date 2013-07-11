@@ -44,6 +44,9 @@
     "infoTagSaved": {
         "message": "Tags saved!"
     },
+    "infoTagEmpty": {
+        "message": "Tag is empty!"
+    },
     "btnComment": {
         "message": "Comment"
     },

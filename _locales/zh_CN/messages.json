@@ -44,6 +44,9 @@
     "infoTagSaved": {
         "message": "\u6807\u7b7e\u5df2\u4fdd\u5b58\uff01"
     },
+    "infoTagEmpty": {
+        "message": "Tag is empty!"
+    },
     "btnComment": {
         "message": "\u8bc4\u8bba"
     },

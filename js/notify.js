@@ -130,6 +130,7 @@
             // Don't hide the notification if the mouse is over the UI
             this.isMouseOnOverlay = false;
             this.isEditorOpen = false;
+            this.isTagsLoaded = false;
             this.editorMode = EDITOR_MODE_NULL;
 
             this.ndOverlay.on('mouseover', function () {
@@ -159,7 +160,12 @@
 
             this.ndBtnTag.on('click', function () {
                 console.log('feweekly.notify.tag');
-                self.onGetTags();
+                if (self.isTagsLoaded) {
+                    self.editorMode = EDITOR_MODE_TAG;
+                    self.openEditor();
+                } else {
+                    self.onGetTags();
+                }
             });
 
             this.ndBtnSave.on('click', function () {
@@ -313,6 +319,7 @@
                 srcCleanData : tags.usedTags
             });
             this.editorMode = EDITOR_MODE_TAG;
+            this.isTagsLoaded = true;
             this.openEditor();
         },
 
@@ -495,7 +502,7 @@
         saveTags: function (tags) {
             if (!tags) {
                 this.overlay.closeEditor();
-                this.overlay.displayMessage(chrome.i18n.getMessage('infoTagSaving'));
+                this.overlay.displayMessage(chrome.i18n.getMessage('infoTagEmpty'));
             } else {
                 this.sendMessage({
                     action: "addTags",
