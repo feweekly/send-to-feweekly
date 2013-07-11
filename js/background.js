@@ -243,6 +243,9 @@ $(function () {
                         usedTags = usedTagsJSON ? JSON.parse(usedTagsJSON) : {};
 
                     // Check for each tag if it's already in the used tags
+                    if (typeof tags === 'string') {
+                        tags = tags.split(',');
+                    }
                     for (var i = 0; i < tags.length; i++) {
                         var tagToSave = tags[i].trim();
                         var newUsedTagObject = {
