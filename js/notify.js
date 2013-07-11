@@ -491,7 +491,7 @@
                 this.sendMessage({
                     action: "addTags",
                     url: window.location.toString(),
-                    tags: tags.split(/[,|，]\s*/)
+                    tags: tags.split(/[,|，]\s*/).join(',')
                 }, bind(this.handleTagResponse, this));
             }
         },

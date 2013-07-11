@@ -471,7 +471,7 @@ $(function () {
         // }
 
         util.setSetting('lastInstalledVersion', VERSION);
-        util.setSetting('debug', true);
+        util.setSetting('debug', false);
 
     }());
 });

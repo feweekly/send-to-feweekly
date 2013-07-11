@@ -146,7 +146,7 @@ var feweekly = (function () {
             tsNow = (new Date().getTime() / 1000).toFixed(0);
 
         // check for cache expire
-        if ((tsTagsUpdatedSince + tagsCacheExpire) > tsNow) {
+        if (!feweekly.isDebug() && (tsTagsUpdatedSince + tagsCacheExpire) > tsNow) {
             return options.success();
         }
 
