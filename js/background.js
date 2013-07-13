@@ -117,7 +117,7 @@ $(function () {
         // 保存页面内容
         } else if (request.action === 'addPage') {
             tabId = (sender && sender.tab && sender.tab.id ? sender.tab.id : null);
-            title = request.title;
+            title = request.data.title || request.title;
             url = request.url;
             html = request.data.html;
             markdown = request.data.markdown;

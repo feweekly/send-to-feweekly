@@ -65,7 +65,7 @@ window.__getFeweeklyClearlyResults = function () {
     ];
 
     var FeweeklyClearly = {
-        debug: true,
+        debug: false,
         window: window,
         document: window.document,
         links: [],
@@ -1243,6 +1243,7 @@ window.__getFeweeklyClearlyResults = function () {
         var _foundHTML = _found._html,
             _prevNode = _found._targetCandidate.__node,
             _prevHTML = '',
+            _titleText = '',
             _foundTitle = false;
 
         (function () {
@@ -1269,14 +1270,25 @@ window.__getFeweeklyClearlyResults = function () {
                     }
 
                     // found heading
-                    var _headingStartPos = _foundHTML.indexOf('<h1');
-                    _headingStartPos = (_headingStartPos > -1 ? _headingStartPos : _foundHTML.indexOf('<h2'));
-                    _headingStartPos = (_headingStartPos > -1 ? _headingStartPos : _foundHTML.indexOf('<h3'));
+                    var _headingStartPos = _foundHTML.indexOf('<h1'),
+                        _headingEndPos = _foundHTML.indexOf('</h1>');
+
+                    if (_headingStartPos === -1) {
+                        _headingStartPos = _foundHTML.indexOf('<h2');
+                        _headingEndPos = _foundHTML.indexOf('</h2>');
+                    }
+
+                    if (_headingStartPos === -1) {
+                        _headingStartPos = _foundHTML.indexOf('<h3');
+                        _headingEndPos = _foundHTML.indexOf('</h3>');
+                    }
+
                     if (_headingStartPos > -1) {
                         var _toHeadingLength = FeweeklyClearly.getTextLength(_foundHTML.substr(0, _headingStartPos).replace(/<[^>]+?>/gi, ''));
                         if (_toHeadingLength < (65 * 3 * 2)) {
                             FeweeklyClearly.log('use title found in page');
                             _foundTitle = true;
+                            _titleText = _foundHTML.substr(_headingStartPos, _headingEndPos - _headingStartPos).replace(/<[^>]+?>/gi, '');
                             return;
                         }
                     }
@@ -1319,13 +1331,15 @@ window.__getFeweeklyClearlyResults = function () {
                 _the_title = (_doc_title_parts[0].split(/\s+/i).length > 1 ? _doc_title_parts[0] : _doc_title);
 
                 // add
-                _foundHTML = '<h1>' + _the_title + '</h1>' + _foundHTML;
+                _foundHTML = '<h1><a href="' + window.location.toString() + '" target="_blank">' + _the_title + '</a></h1>' + _foundHTML;
+                _titleText = _the_title;
             }
         }
 
         // return
         return {
             html: _foundHTML,
+            title: _titleText,
             markdown: HTML2Markdown ? HTML2Markdown(_foundHTML) : _foundHTML,
             links: this.links,
             images: this.images
