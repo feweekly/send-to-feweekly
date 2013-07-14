@@ -47,18 +47,6 @@
                 util.sendMessage({action: "showSubscribeWindow"});
             });
 
-            $('#search-support-link').click(function (e) {
-                var searchSupportLink = "http://help.feweekly.com";
-                util.sendMessage({action: "openTab", url: searchSupportLink});
-                e.preventDefault();
-            });
-
-            $('#send-us-an-email-link').click(function (e) {
-                var emailURL = "mailto:feweeklymaster@gmail.com?subject=Question about Feweekly Extension for " + (util.isChrome() ? "Chrome" : "Safari");
-                util.sendMessage({action: "openTab", url: emailURL});
-                e.preventDefault();
-            });
-
         }());
 
         (function initKeyboardShortcuts() {
