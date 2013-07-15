@@ -42,12 +42,6 @@
             var overlay = '' +
             '<div id="j-feweekly-overlay">' +
                 '<div id="j-feweekly-overlay-wrapper">' +
-                    '<div id="j-feweekly-button-wrapper" style="display:none">' +
-                        '<span id="j-feweekly-button-comment" class="feweekly-btn feweekly-btn--large feweekly-btn--warning"></span>' +
-                        '<span id="j-feweekly-button-tag" class="feweekly-btn feweekly-btn--large feweekly-btn--warning"></span>' +
-                        '<span id="j-feweekly-button-save" class="feweekly-btn feweekly-btn--large feweekly-btn--success"></span>' +
-                        '<span id="j-feweekly-button-close" class="feweekly-btn feweekly-btn--large"></span>' +
-                    '</div>' +
                     '<a id="j-feweekly-overlay-logo" href="http://' + FEWEEKLY_DOMAIN + '" target="_blank"></a>' +
                     '<div id="j-feweekly-overlay-message"></div>' +
                     '<div id="j-feweekly-comment-wrapper" style="display:none">' +
@@ -55,8 +49,14 @@
                     '</div>' +
                     '<div id="j-feweekly-tag-wrapper" style="display:none">' +
                         '<div id="j-feweekly-tag-wrapper-inner">' +
-                        '<input type="text" id="j-feweekly-tag-input" name="feweekly-tag-input" />' +
+                            '<input type="text" id="j-feweekly-tag-input" name="feweekly-tag-input" />' +
                         '</div>' +
+                    '</div>' +
+                    '<div id="j-feweekly-button-wrapper" style="display:none">' +
+                        '<span id="j-feweekly-button-comment" class="feweekly-btn feweekly-btn--large feweekly-btn--warning"></span>' +
+                        '<span id="j-feweekly-button-tag" class="feweekly-btn feweekly-btn--large feweekly-btn--warning"></span>' +
+                        '<span id="j-feweekly-button-save" class="feweekly-btn feweekly-btn--large feweekly-btn--success"></span>' +
+                        '<span id="j-feweekly-button-close" class="feweekly-btn feweekly-btn--large"></span>' +
                     '</div>' +
                 '</div>' +
             '</div>';

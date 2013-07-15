@@ -28,6 +28,21 @@
     -webkit-perspective:1000;
 }
 
+#j-feweekly-overlay-wrapper {
+    margin:0 auto;
+    width:86%;
+    height:100%;
+}
+
+#j-feweekly-overlay-wrapper:after {
+    content:'';
+    display:block;
+    clear:both;
+    height:0;
+    overflow:hidden;
+    visibility:hidden;
+}
+
 #j-feweekly-overlay-logo {
     display:block;
     width:225px;
@@ -37,29 +52,33 @@
     background:url('chrome-extension://__MSG_@@extension_id__/img/Feweekly-Chrome-OptionsLogo.png') left center no-repeat;
 }
 
-#j-feweekly-overlay-wrapper {
-    padding-left:7%;
-    padding-right:7%;
-    height:100%;
-}
-
 #j-feweekly-overlay-message,
 #j-feweekly-comment-wrapper,
 #j-feweekly-tag-wrapper {
-    text-indent:80px;
+    width:45%;
+    float:left;
+    padding-left:80px;
     font-weight:bold;
+    text-align:center;
+}
+
+#j-feweekly-button-wrapper {
+    margin-top:16px;
+    line-height:50px;
+    float:right;
+    width:360px;
+    text-align:right;
 }
 
 #j-feweekly-tag-wrapper-inner {
     text-indent:0;
     position:relative;
-    width:50%;
     margin:0 auto;
+    width:100%;
 }
 
 #j-feweekly-comment-input,
 #j-feweekly-tag-input {
-    display:inline-block;
     padding:4px 6px;
     font-size:14px;
     color:#555555;
@@ -74,11 +93,11 @@
     transition:border linear 0.2s, box-shadow linear 0.2s;
     height:50px;
     margin:14px 0;
-    width:50%;
+    width:80%;
 }
 
 #j-feweekly-tag-input {
-    width:90%;
+    width:100%;
 }
 
 #j-feweekly-comment-input:focus,
@@ -87,12 +106,6 @@
     outline:0;
     -webkit-box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
     box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
-}
-
-#j-feweekly-button-wrapper {
-    margin-top:16px;
-    line-height:50px;
-    float:right;
 }
 
 .feweekly-btn {
@@ -358,7 +371,7 @@
 #j-feweekly-overlay .aWrapper {
     /* Attaches to DOM nearby input element, holds the absolutely positioned list container */
     position:absolute !important;
-    width:90% !important;
+    width:80% !important;
     display:block !important;
     top:70px !important;
     left:8px !important;
@@ -366,6 +379,7 @@
     height:0;
     vertical-align:top;
     overflow:visible;
+    text-align:left;
 }
 
 #j-feweekly-overlay .aCon {
