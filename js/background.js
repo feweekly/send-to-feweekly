@@ -211,6 +211,7 @@ $(function () {
 
                     // Get all keys tags
                     for (var j = 0; j < usedTagsObjectArray.length; j++) {
+                        if (!usedTagsObjectArray[j].tag) { continue; }
                         usedTags.push(usedTagsObjectArray[j].tag);
                     }
 
@@ -252,6 +253,7 @@ $(function () {
                             "tag": tagToSave,
                             "timestamp": new Date()
                         };
+                        if (!tagToSave) { continue; }
                         usedTags[tagToSave] = newUsedTagObject;
                     }
                     util.setSetting("usedTags", JSON.stringify(usedTags));
