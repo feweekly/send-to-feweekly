@@ -417,6 +417,7 @@
     -webkit-box-orient: vertical;
     display: -webkit-box;
     padding:5px;
+    margin:0 !important;
     line-height:1.2em;
     white-space:nowrap;
 }
