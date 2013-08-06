@@ -52,11 +52,11 @@
                             '<input type="text" id="j-feweekly-tag-input" name="feweekly-tag-input" />' +
                         '</div>' +
                     '</div>' +
-                    '<div id="j-feweekly-button-wrapper" style="display:none">' +
-                        '<span id="j-feweekly-button-comment" class="feweekly-btn feweekly-btn--large feweekly-btn--warning"></span>' +
-                        '<span id="j-feweekly-button-tag" class="feweekly-btn feweekly-btn--large feweekly-btn--warning"></span>' +
-                        '<span id="j-feweekly-button-save" class="feweekly-btn feweekly-btn--large feweekly-btn--success"></span>' +
-                        '<span id="j-feweekly-button-close" class="feweekly-btn feweekly-btn--large"></span>' +
+                    '<div id="j-feweekly-button-wrapper">' +
+                        '<span id="j-feweekly-button-comment" style="display:none;" class="feweekly-btn feweekly-btn--large feweekly-btn--warning"></span>' +
+                        '<span id="j-feweekly-button-tag" style="display:none;" class="feweekly-btn feweekly-btn--large feweekly-btn--warning"></span>' +
+                        '<span id="j-feweekly-button-save" style="display:none;" class="feweekly-btn feweekly-btn--large feweekly-btn--success"></span>' +
+                        '<span id="j-feweekly-button-close" style="display:none;" class="feweekly-btn feweekly-btn--large"></span>' +
                     '</div>' +
                 '</div>' +
             '</div>';
@@ -82,7 +82,6 @@
             this.ndTagWrapper = $('#j-feweekly-tag-wrapper');
             this.ndTag = $('#j-feweekly-tag-input');
 
-            this.ndBtnWrapper = $('#j-feweekly-button-wrapper');
             this.ndBtnClose = $('#j-feweekly-button-close');
             this.ndBtnSave = $('#j-feweekly-button-save');
             this.ndBtnComment = $('#j-feweekly-button-comment');
@@ -241,9 +240,8 @@
         showEditorButtons: function () {
             var self = this;
             setTimeout(function () {
-                self.ndBtnSave.hide();
-                self.ndBtnClose.hide();
-                self.ndBtnWrapper.show();
+                self.ndBtnComment.show();
+                self.ndBtnTag.show();
                 self.getReadyToHide();
             }, 30);
         },
